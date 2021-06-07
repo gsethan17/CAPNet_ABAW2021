@@ -1,0 +1,10 @@
+from src.ResNet import ResNet34
+
+# Model Load
+    model = ResNet34(cardinality = 32, se = 'parallel_add')
+    print("Model Load is Completed")
+    # Weights Load
+    weight_path = os.path.join(base_dir, 'weights', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt')
+    assert len(glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
+    model.load_weights(weight_path)
+    print("Model weights are loaded")

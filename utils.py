@@ -58,10 +58,14 @@ class Dataset_generator() :
 
     def count(self, dic):
         count = 0
+        count_na = 0
+
         for k in dic :
             count += len(dic[k])
+            count_na += dic[k].count("")        
 
-        return count
+        return count-count_na
+
 
     def get_count(self) :
         return self.count(self.list_trains), self.count(self.list_vals)
@@ -183,21 +187,37 @@ class Dataset_generator() :
 
     def get_inputs(self, list_subject_name, list_img_name):
         # assert len(list_video_name) == len(list_img_name), 'There is as error in get_trainData function.'
-        inputs = tf.zeros((self.batch_size, INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3))
+        # inputs = tf.zeros((self.batch_size, INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3))
 
         for i in range(self.batch_size) :
             subject_name = list_subject_name[i]
             img_name = list_img_name[i]
+            '''
+            ###############################
+            if subject_name in {1번딕셔너리}.keys() :
+                if img_name in {1번딕셔너리}[subject_name] :
+                    alte_subject_name = {2번딕셔너리}[subject_name]
+                    path = os.path.join(PATH_DATA, 'images', 'cropped', alti_subject_name, img_name)
 
+            else :
+                path = os.path.join(PATH_DATA, 'images', 'cropped', subject_name, img_name)
+            ###############################
+            '''
             path = os.path.join(PATH_DATA, 'images', 'cropped', subject_name, img_name)
-            image = self.load_image(path)
+
+            try :
+                image = self.load_image(path)
+            except:
+                continue
 
             image = tf.expand_dims(image, axis = 0)
 
-            if i == 0 :
-                inputs = image
-            else :
+#            if i == 0 :
+#                inputs = image
+            try :
                 inputs = tf.concat([inputs, image], axis = 0)
+            except:
+                inputs = image
 
         return inputs
 

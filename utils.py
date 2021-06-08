@@ -223,20 +223,20 @@ class Dataset_generator() :
         return labels
 
 # Metric
-def CCC_score(x, y):
-    vx = x - tf.mean(x)
-	vy = y - tf.mean(y)
-	rho = tf.sum(vx * vy) / (tf.sqrt(tf.sum(vx**2)) * tf.sqrt(tf.sum(vy**2)))
-	x_m = tf.mean(x)
-	y_m = tf.mean(y)
-	x_s = tf.std(x)
-	y_s = tf.std(y)
-	ccc = 2*rho*x_s*y_s/(x_s**2 + y_s**2 + (x_m - y_m)**2)
-	return ccc
-
-def metric_CCC(x, y):
-	items = [CCC_score(x[:,0], y[:,0]), CCC_score(x[:,1], y[:,1])]
-	return items, sum(items) / 2
+# def CCC_score(x, y):
+#     vx = x - tf.mean(x)
+#     vy = y - tf.mean(y)
+#     rho = tf.sum(vx * vy) / (tf.sqrt(tf.sum(vx**2)) * tf.sqrt(tf.sum(vy**2)))
+# 	x_m = tf.mean(x)
+# 	y_m = tf.mean(y)
+# 	x_s = tf.std(x)
+# 	y_s = tf.std(y)
+# 	ccc = 2*rho*x_s*y_s/(x_s**2 + y_s**2 + (x_m - y_m)**2)
+# 	return ccc
+#
+# def metric_CCC(x, y):
+# 	items = [CCC_score(x[:,0], y[:,0]), CCC_score(x[:,1], y[:,1])]
+# 	return items, sum(items) / 2
 
 
 

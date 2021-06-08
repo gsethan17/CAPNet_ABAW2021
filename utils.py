@@ -2,6 +2,7 @@ import os
 from glob import glob
 import random
 import csv
+import pickle
 import numpy as np
 import tensorflow as tf
 import copy
@@ -9,9 +10,15 @@ import glob
 from base_model.ResNet import ResNet34
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
+PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
 PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
 
 INPUT_IMAGE_SIZE = (224, 224)
+
+def read_pickle(path) :
+    with open(path, 'rb') as f:
+        content = pickle.load(f)
+    return content
 
 def read_txt(path) :
     with open(path) as f:
@@ -189,26 +196,30 @@ class Dataset_generator() :
         # assert len(list_video_name) == len(list_img_name), 'There is as error in get_trainData function.'
         # inputs = tf.zeros((self.batch_size, INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3))
 
+        switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
+        switch_subjecs = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
+
         for i in range(self.batch_size) :
             subject_name = list_subject_name[i]
             img_name = list_img_name[i]
-            '''
+
             ###############################
-            if subject_name in {1번딕셔너리}.keys() :
-                if img_name in {1번딕셔너리}[subject_name] :
-                    alte_subject_name = {2번딕셔너리}[subject_name]
-                    path = os.path.join(PATH_DATA, 'images', 'cropped', alti_subject_name, img_name)
+            if subject_name in switch_images.keys() :
+                if img_name in switch_images[subject_name] :
+                    alti_subject_name = switch_subjects[subject_name]
+                    image_path = os.path.join(PATH_DATA, 'images', 'cropped', alti_subject_name, img_name)
+                else :
+                    image_path = os.path.join(PATH_DATA, 'images', 'cropped', subject_name, img_name)
+
 
             else :
-                path = os.path.join(PATH_DATA, 'images', 'cropped', subject_name, img_name)
+                image_path = os.path.join(PATH_DATA, 'images', 'cropped', subject_name, img_name)
             ###############################
-            '''
-            path = os.path.join(PATH_DATA, 'images', 'cropped', subject_name, img_name)
 
-            try :
-                image = self.load_image(path)
-            except:
-                continue
+#            try :
+            image = self.load_image(image_path)
+#            except:
+#                continue
 
             image = tf.expand_dims(image, axis = 0)
 
@@ -265,24 +276,26 @@ def metric_CCC(x, y):
 
 if __name__ == '__main__' :
 
-    dg = Dataset_generator(PATH_DATA_GUIDE, batch_size=3, random_split=True)
+    dg = Dataset_generator(PATH_DATA_GUIDE, batch_size=128, random_split=True)
     num_tarin, num_val = dg.get_count()
-    print(num_tarin, num_val)
+    print(num_val)
+    
+    for i in range(num_val // 128) :
+        input_, label_ = dg.get_valData()
+#        print(input_.shape, label_.shape)
 
-    input_, label_ = dg.get_trainData()
-    print(input_.shape, label_.shape)
-    input__, label__ = dg.get_trainData()
-    print(input__.shape, label__.shape)
+        _, num_val = dg.get_count()
+        print(num_val)
 
-    ccc_v = CCC_score(label_[:,0], label__[:,0])
-    ccc_a = CCC_score(label_[:,1], label__[:,1])
+#    ccc_v = CCC_score(label_[:,0], label__[:,0])
+#    ccc_a = CCC_score(label_[:,1], label__[:,1])
   
-    print(ccc_v)
-    print(ccc_a)
+#    print(ccc_v)
+#    print(ccc_a)
 
-    items, mean_items = metric_CCC(label_, label__)
-    print(items)
-    print(mean_items)
+#    items, mean_items = metric_CCC(label_, label__)
+#    print(items)
+#    print(mean_items)
     # sample_list = dg.total_samples['5-60-1920x1080-3']
     # for i, image in enumerate(sample_list) :
     #     if image == "" :

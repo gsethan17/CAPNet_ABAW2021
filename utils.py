@@ -2,13 +2,14 @@ import os
 from glob import glob
 import random
 import csv
+import numpy as np
 import tensorflow as tf
 import copy
 import glob
 from base_model.ResNet import ResNet34
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
-PATH_DATA = os.path.join(os.getcwd(), 'data')
+PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
 
 INPUT_IMAGE_SIZE = (224, 224)
 
@@ -40,7 +41,7 @@ def get_model(key='FER', preTrained = True) :
         if preTrained :
             # load pre-trained weights
             weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt')
-            assert len(glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
+            assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
             model.load_weights(weight_path)
         
         return model
@@ -71,7 +72,8 @@ class Dataset_generator() :
     def split_samples(self, subject_list):
         dic = {}
         for subject in subject_list :
-            dic[subject] = copy.deepcopy(self.total_samples[subject])
+            if subject in self.total_samples.keys() :
+                dic[subject] = copy.deepcopy(self.total_samples[subject])
         return dic
 
     def split(self, random_split):
@@ -132,6 +134,7 @@ class Dataset_generator() :
                 del self.list_trains[candi_subject]
                 continue
 
+        print(candi_subject_name, candi_img_name)
         # get inputs
         inputs = self.get_inputs(candi_subject_name, candi_img_name)
 
@@ -223,20 +226,20 @@ class Dataset_generator() :
         return labels
 
 # Metric
-# def CCC_score(x, y):
-#     vx = x - tf.mean(x)
-#     vy = y - tf.mean(y)
-#     rho = tf.sum(vx * vy) / (tf.sqrt(tf.sum(vx**2)) * tf.sqrt(tf.sum(vy**2)))
-# 	x_m = tf.mean(x)
-# 	y_m = tf.mean(y)
-# 	x_s = tf.std(x)
-# 	y_s = tf.std(y)
-# 	ccc = 2*rho*x_s*y_s/(x_s**2 + y_s**2 + (x_m - y_m)**2)
-# 	return ccc
-#
-# def metric_CCC(x, y):
-# 	items = [CCC_score(x[:,0], y[:,0]), CCC_score(x[:,1], y[:,1])]
-# 	return items, sum(items) / 2
+def CCC_score(x, y):
+    vx = x - np.mean(x)
+    vy = y - np.mean(y)
+    rho = np.sum(vx * vy) / (np.sqrt(np.sum(vx**2)) * np.sqrt(np.sum(vy**2)))
+    x_m = np.mean(x)
+    y_m = np.mean(y)
+    x_s = np.std(x)
+    y_s = np.std(y)
+    ccc = 2*rho*x_s*y_s/(x_s**2 + y_s**2 + (x_m - y_m)**2)
+    return ccc
+
+def metric_CCC(x, y):
+    items = [CCC_score(x[:,0], y[:,0]), CCC_score(x[:,1], y[:,1])]
+    return items, sum(items) / 2
 
 
 
@@ -248,19 +251,18 @@ if __name__ == '__main__' :
 
     input_, label_ = dg.get_trainData()
     print(input_.shape, label_.shape)
+    input__, label__ = dg.get_trainData()
+    print(input__.shape, label__.shape)
 
-    import cv2
-    import matplotlib.pyplot as plt
+    ccc_v = CCC_score(label_[:,0], label__[:,0])
+    ccc_a = CCC_score(label_[:,1], label__[:,1])
+  
+    print(ccc_v)
+    print(ccc_a)
 
-    for i in range(input_.shape[0]) :
-        print(label_[i])
-
-        img = input_[i]
-        cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        plt.imshow(img)
-        plt.show()
-
-
+    items, mean_items = metric_CCC(label_, label__)
+    print(items)
+    print(mean_items)
     # sample_list = dg.total_samples['5-60-1920x1080-3']
     # for i, image in enumerate(sample_list) :
     #     if image == "" :

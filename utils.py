@@ -197,7 +197,7 @@ class Dataset_generator() :
         # inputs = tf.zeros((self.batch_size, INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3))
 
         switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
-        switch_subjecs = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
+        switch_subjects = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
 
         for i in range(self.batch_size) :
             subject_name = list_subject_name[i]

@@ -57,38 +57,28 @@ def get_model(key='FER', preTrained = True) :
 
 # Dataloader
 class Dataloader(Sequence) :
-    def __init__(self, x, y, guide_path, batch_size=1, shuffle=False):
+    def __init__(self, x, y, image_path, batch_size=1, shuffle=False):
         self.x, self.y = x, y
-        self.guide_path = guide_path
+        self.image_path = image_path
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.on_epoch_end()
 
-    def get_samples(self):
-        samples = {}
-
-        for i, name in enumerate(self.list_subjects) :
-
-            file_path = os.path.join(self.guide_path, name + '.csv')
-
-            samples[name] = read_csv(file_path)
-
-        return samples
+    def __len__(self):
+        return int(np.ceil(len(self.x)) / float(self.batch_size))
 
     def on_epoch_end(self):
-        self.samples = self.get_samples()
+        self.indices = np.arange(len(self.x))
 
-    def __len__(self):
-        count = 0
-        count_na = 0
+        if self.shuffle == True :
+            np.random.shuffle(self.indices)
 
-        for k in self.samples:
-            count += len(self.samples[k])
-            count_na += self.samples[k].count("")
+    def __getitem__(self, idx):
 
-        return count - count_na
+        indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
 
-    # def __getitem__(self, idx):
+        batch_x = [self.x[i] for i in indices]
+        batch_y = [self.y[i] for i in indices]
 
 
 

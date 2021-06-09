@@ -1,13 +1,21 @@
-from utils import get_model, Dataset_generator, metric_CCC, read_csv
+from utils import get_model, Dataset_generator, metric_CCC, read_csv, read_pickle
 import os
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
 PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
 
 BATCH_SIZE = 32
 
-list_trains = read_csv(os.path.join(PATH_DATA, 'va_train_set.csv'))
-list_vals = read_csv(os.path.join(PATH_DATA, 'va_val_set.csv'))
+train_path = os.path.join(PATH_DATA, 'va_train_list.pickle')
+train_data = read_pickle(train_path)
+
+val_path = os.path.join(PATH_DATA, 'va_val_list.pickle')
+val_data = read_pickle(val_path)
+
+train_dataloader = Dataloader(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH, batch_size=BATCH_SIZE, shuffle=True)
+val_dataloader = Dataloader(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, batch_size=BATCH_SIZE, shuffle=True)
+
 
 # Data Loader setup
 Dataloader = Dataset_generator(PATH_DATA_GUIDE, batch_size=BATCH_SIZE)

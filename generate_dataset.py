@@ -65,6 +65,9 @@ def get_samples(dic) :
     na_count = 0
 
     for i, name in enumerate(dic.keys()) :
+
+        if not name == "30-30-1920x1080_right" or name == "30-30-1920x1080_left" :
+            continue
         for j, image in enumerate(dic[name]) :
 
             if image == "" :
@@ -80,7 +83,9 @@ def get_samples(dic) :
                 object = name
 
             if not os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))) :
-                print(object, name)
+                print("{} / {} || {} / {} || {} / {} / {}".format(i + 1, len(dic.keys()), j + 1, len(dic[name]),
+                                                                  len(list_x), len(list_y), na_count), end='\r')
+                print(name, object, image)
                 assert os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))), "{} file is not exist".format(os.path.join(object, image))
 
             list_x.append(os.path.join(object, image))

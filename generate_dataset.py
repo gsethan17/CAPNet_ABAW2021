@@ -7,8 +7,8 @@ from utils import read_pickle, read_csv, read_txt
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
 PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
-# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
-PATH_DATA = os.path.join(os.getcwd(), 'data')
+PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+# PATH_DATA = os.path.join(os.getcwd(), 'data')
 
 
 list_subjects = sorted([x.rstrip('.csv') for x in os.listdir(PATH_DATA_GUIDE) if x.endswith('.csv')])
@@ -83,10 +83,6 @@ def get_samples(dic) :
             list_y.append([float(x) for x in list_labels[(idx+1)]])
 
             print("{} / {} || {} / {} || {} / {}".format(i+1, len(dic.keys()), j+1, len(dic[name]), len(list_x), len(list_y)), end='\r')
-
-        break
-
-
 
     return list_x, list_y
 

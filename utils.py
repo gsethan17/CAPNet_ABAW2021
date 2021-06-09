@@ -9,8 +9,9 @@ import copy
 import glob
 from base_model.ResNet import ResNet34
 from tensorflow.keras.utils import Sequence
-# from skimage.io import imread
-# from skimage.transform import resize
+from tensorflow.keras.losses import Loss
+from tensorflow.keras.models import Model
+from tensorflow.keras.applications import ResNet50
 
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
@@ -44,8 +45,8 @@ def read_csv(path) :
     return lines
 
 # Model Load Function
-def get_model(key='FER', preTrained = True) :
-    if key == 'FER' :
+def get_model(key='pretrainedFER', preTrained = True) :
+    if key == 'pretrainedFER' :
         # Model load
         model = ResNet34(cardinality = 32, se = 'parallel_add')
         
@@ -54,11 +55,32 @@ def get_model(key='FER', preTrained = True) :
             weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt')
             assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
             model.load_weights(weight_path)
-        
-        return model
 
-@tf.function
+    elif key == 'resnet50' :
+        if preTrained :
+            base_model = ResNet50(include_top=False,
+                                                    weights='imagenet',
+                                                    input_shape=(INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3),
+                                                    pooling='avg')
+        else :
+            base_model = ResNet50(include_top=False,
+                                                    weights=None,
+                                                    input_shape=(INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3),
+                                                    pooling='avg')
+
+        x = base_model.output
+        x = tf.keras.layers.Dense(1024, activation='relu')(x)
+        x = tf.keras.layers.Dense(500, activation='relu')(x)
+        output_ = tf.keras.layers.Dense(2, activation='tanh')(x)
+
+        model = Model(inputs=base_model.input,
+                                      outputs=output_)
+
+    return model
+
+# @tf.function
 def load_image(filename):
+    # print(filename)
     raw = tf.io.read_file(filename)
     image = tf.image.decode_jpeg(raw, channels=3)
     image = tf.image.resize(image, [INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1]])
@@ -95,6 +117,31 @@ class Dataloader(Sequence) :
 
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
+class CCC(Loss) :
+    def __init__(self, name="ccc"):
+        super().__init__(name=name)
+
+    def CCC_score(self, x, y):
+        '''
+        vx = x - np.mean(x)
+        vy = y - np.mean(y)
+        rho = np.sum(vx * vy) / (np.sqrt(np.sum(vx ** 2)) * np.sqrt(np.sum(vy ** 2)))
+        x_m = np.mean(x)
+        y_m = np.mean(y)
+        x_s = np.std(x)
+        y_s = np.std(y)
+        ccc = 2 * rho * x_s * y_s / (x_s ** 2 + y_s ** 2 + (x_m - y_m) ** 2)
+        '''
+        ''' Concordance Correlation Coefficient'''
+        sxy = np.sum((x - np.mean(x)) * (y - np.mean(y))) / x.shape[0]
+        ccc = 2 * sxy / (np.var(x) + np.var(y) + (np.mean(x) - np.mean(y)) ** 2)
+
+        return ccc
+
+    def call(self, y_pred, y_true):
+        items = [self.CCC_score(y_pred[:, 0], y_true[:, 0]), self.CCC_score(y_pred[:, 1], y_true[:, 1])]
+
+        return items, sum(items) / 2
 
 
 # Dataset

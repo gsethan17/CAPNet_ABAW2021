@@ -1,4 +1,6 @@
-from utils import get_model, Dataset_generator, metric_CCC, read_csv, read_pickle, Dataloader
+from utils import get_model, Dataset_generator, metric_CCC, read_csv, read_pickle, Dataloader, CCC
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import MSE
 import os
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
@@ -7,7 +9,15 @@ PATH_DATA = os.path.join(os.getcwd(), 'data')
 # IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 
-BATCH_SIZE = 3
+MODEL_KEY = 'pretrainedFER'  # 'pretrainedFER' / 'resnet50'
+PRETRAINED = True
+
+EPOCHS = 5
+BATCH_SIZE = 32
+
+LEARNING_RATE = 0.001
+OPTIMIZER = Adam(learning_rate=LEARNING_RATE)
+LOSS = MSE
 
 
 def main() :
@@ -26,11 +36,23 @@ def main() :
     # Dataloader = Dataset_generator(PATH_DATA_GUIDE, batch_size=BATCH_SIZE)
     # print(Dataloader.get_count())
 
-    '''
+
     # Model Loader setup
-    model = get_model()
-    
-    
+    # model = get_model(key=MODEL_KEY,pretrained=PRETRAINED)
+    model = get_model(key=MODEL_KEY, preTrained=PRETRAINED)
+
+    # print(model.summary())
+
+    # Model setup
+    model.compile(optimizer=OPTIMIZER, loss=LOSS)
+
+    model.fit(x=train_dataloader,
+              epochs=EPOCHS,
+              # callbacks=[],
+              validation_data=val_dataloader,
+              shuffle=True,
+              verbose=2)
+    '''
     # train
     input_, label_ = Dataloader.get_trainData()
     print(input_.shape)

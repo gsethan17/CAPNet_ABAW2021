@@ -62,8 +62,15 @@ def get_samples(dic) :
     list_x = []
     list_y = []
 
+    na_count = 0
+
     for i, name in enumerate(dic.keys()) :
         for j, image in enumerate(dic[name]) :
+
+            if image == "" :
+                na_count += 1
+                continue
+
             if name in switch_subjects.keys() :
                 if image in switch_images[name] :
                     object = switch_subjects[name]
@@ -74,7 +81,7 @@ def get_samples(dic) :
 
             if not os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))) :
                 print(object, name)
-            assert os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))), "{} file is not exist".format(os.path.join(object, image))
+                assert os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))), "{} file is not exist".format(os.path.join(object, image))
 
             list_x.append(os.path.join(object, image))
 
@@ -85,7 +92,7 @@ def get_samples(dic) :
             list_labels = read_txt(path)
             list_y.append([float(x) for x in list_labels[(idx+1)]])
 
-            print("{} / {} || {} / {} || {} / {}".format(i+1, len(dic.keys()), j+1, len(dic[name]), len(list_x), len(list_y)), end='\r')
+            print("{} / {} || {} / {} || {} / {} / {}".format(i+1, len(dic.keys()), j+1, len(dic[name]), len(list_x), len(list_y), na_count), end='\r')
 
     return list_x, list_y
 

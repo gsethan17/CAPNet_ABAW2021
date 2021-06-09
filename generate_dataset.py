@@ -70,7 +70,7 @@ def get_samples(dic) :
             continue
         for j, image in enumerate(dic[name]) :
 
-            if image == "" :
+            if not image :
                 na_count += 1
                 continue
 

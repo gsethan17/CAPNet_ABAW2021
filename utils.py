@@ -8,6 +8,7 @@ import tensorflow as tf
 import copy
 import glob
 from base_model.ResNet import ResNet34
+from tensorflow.keras.utils import Sequence
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
 PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
@@ -52,6 +53,44 @@ def get_model(key='FER', preTrained = True) :
             model.load_weights(weight_path)
         
         return model
+
+
+# Dataloader
+class Dataloader(Sequence) :
+    def __init__(self, x, y, guide_path, batch_size=1, shuffle=False):
+        self.x, self.y = x, y
+        self.guide_path = guide_path
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.on_epoch_end()
+
+    def get_samples(self):
+        samples = {}
+
+        for i, name in enumerate(self.list_subjects) :
+
+            file_path = os.path.join(self.guide_path, name + '.csv')
+
+            samples[name] = read_csv(file_path)
+
+        return samples
+
+    def on_epoch_end(self):
+        self.samples = self.get_samples()
+
+    def __len__(self):
+        count = 0
+        count_na = 0
+
+        for k in self.samples:
+            count += len(self.samples[k])
+            count_na += self.samples[k].count("")
+
+        return count - count_na
+
+    # def __getitem__(self, idx):
+
+
 
 # Dataset
 class Dataset_generator() :

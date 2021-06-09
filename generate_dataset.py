@@ -72,8 +72,11 @@ def get_samples(dic) :
             else:
                 object = name
 
-            list_x.append(os.path.join(object, image))
+            if not os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))) :
+                print(object, name)
             assert os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))), "{} file is not exist".format(os.path.join(object, image))
+
+            list_x.append(os.path.join(object, image))
 
             idx = dic[name].index(image)
             path = os.path.join(PATH_DATA, 'annotations', 'VA_Set', '**', name + '.txt')

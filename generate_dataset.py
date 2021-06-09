@@ -64,6 +64,7 @@ def get_samples(dic) :
     list_y = []
 
     na_count = 0
+    error_list = []
 
     for i, name in enumerate(dic.keys()) :
 
@@ -82,10 +83,11 @@ def get_samples(dic) :
                 object = name
 
             if not os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))) :
-                print("{} / {} || {} / {} || {} / {} / {}".format(i + 1, len(dic.keys()), j + 1, len(dic[name]),
-                                                                  len(list_x), len(list_y), na_count), end='\r')
-                print(name, object, image)
-                assert os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))), "{} file is not exist".format(os.path.join(object, image))
+                # print("{} / {} || {} / {} || {} / {} / {}".format(i + 1, len(dic.keys()), j + 1, len(dic[name]),
+                #                                                   len(list_x), len(list_y), na_count), end='\r')
+                # print(name, object, image)
+                error_list.append([name, object, image])
+                # assert os.path.isfile(os.path.join(PATH_DATA, 'images', 'cropped', os.path.join(object, image))), "{} file is not exist".format(os.path.join(object, image))
 
             list_x.append(os.path.join(object, image))
 
@@ -96,14 +98,14 @@ def get_samples(dic) :
             list_labels = read_txt(path)
             list_y.append([float(x) for x in list_labels[(idx+1)]])
 
-            print("{} / {} || {} / {} || {} / {} / {}".format(i+1, len(dic.keys()), j+1, len(dic[name]), len(list_x), len(list_y), na_count), end='\r')
-
+            print("{} / {} || {} / {} || {} / {} / {} / {}".format(i+1, len(dic.keys()), j+1, len(dic[name]), len(list_x), len(list_y), na_count, len(error_list)), end='\r')
+    print('')
+    print(error_list)
     return list_x, list_y
 
 
 print('Training data')
 train_x_list, train_y_list = get_samples(dic_trains)
-print('')
 print(len(train_x_list))
 print(len(train_y_list))
 
@@ -121,7 +123,6 @@ with open(train_save_path, 'wb') as f :
 print('Validation data')
 
 val_x_list, val_y_list = get_samples(dic_vals)
-print('')
 print(len(val_x_list))
 print(len(val_y_list))
 

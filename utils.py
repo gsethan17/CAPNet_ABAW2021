@@ -9,6 +9,9 @@ import copy
 import glob
 from base_model.ResNet import ResNet34
 from tensorflow.keras.utils import Sequence
+# from skimage.io import imread
+# from skimage.transform import resize
+
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
 PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
@@ -54,6 +57,14 @@ def get_model(key='FER', preTrained = True) :
         
         return model
 
+@tf.function
+def load_image(filename):
+    raw = tf.io.read_file(filename)
+    image = tf.image.decode_jpeg(raw, channels=3)
+    image = tf.image.resize(image, [INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1]])
+    image = image / 255.0
+    return image
+
 
 # Dataloader
 class Dataloader(Sequence) :
@@ -78,7 +89,11 @@ class Dataloader(Sequence) :
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
 
         batch_x = [self.x[i] for i in indices]
+        image_x = [load_image(os.path.join(self.image_path, file_name)) for file_name in batch_x]
+
         batch_y = [self.y[i] for i in indices]
+
+        return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
 
 

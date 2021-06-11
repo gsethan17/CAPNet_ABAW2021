@@ -159,6 +159,12 @@ def main() :
         results['val_ccc_A'].append(tf.math.reduce_mean(val_metric_A))
         results['val_CCC'].append(tf.math.reduce_mean(val_metric_C))
 
+        print("{:>6} / {:>6}\t||\ttrain_loss:{:8.4f}, train_CCC:{:8.4f}, val_loss:{:8.4f}, val_CCC:{:8.4f})".format(i + 1, EPOCHS,
+                                                                                      results['train_loss'],
+                                                                                      results['train_CCC'],
+                                                                                      results['val_loss']
+                                                                                      results['val_CCC']))
+
         # early stop
         if epoch > 10 :
             if results['val_CCC'][-10] > tf.math.reduce_max(results['val_CCC'][-9:]) :

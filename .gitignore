@@ -135,5 +135,8 @@ base_model/
 data_guide/
 data/
 
+# results folder
+results/
+
 # etc
 .idea/

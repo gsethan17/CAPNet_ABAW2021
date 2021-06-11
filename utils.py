@@ -355,7 +355,7 @@ class Dataset_generator() :
 
         return labels
 
-# Metric
+
 def CCC_score(x, y):
     x_mean = tf.math.reduce_mean(x)
     y_mean = tf.math.reduce_mean(y)
@@ -367,10 +367,18 @@ def CCC_score(x, y):
     ccc = (2 * sxy) / (x_var + y_var + tf.math.pow(x_mean - y_mean, 2))
     return ccc
 
-def metric_CCC(x, y):
-    items = [CCC_score(x[:,0], y[:,0]), CCC_score(x[:,1], y[:,1])]
+# Loss function
+def loss_ccc(x, y) :
+    items = [CCC_score(x[:, 0], y[:, 0]), CCC_score(x[:, 1], y[:, 1])]
     total_ccc = tf.math.reduce_mean(items)
-    return total_ccc, items
+    loss = 1 - total_ccc
+    return loss
+
+# Metric function
+def metric_CCC(x, y):
+    cccs = [CCC_score(x[:,0], y[:,0]), CCC_score(x[:,1], y[:,1])]
+    # total_ccc = tf.math.reduce_mean(items)
+    return cccs
 
 
 

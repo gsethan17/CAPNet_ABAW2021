@@ -4,15 +4,15 @@ from tensorflow.keras.losses import MSE
 import os
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
-# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
-PATH_DATA = os.path.join(os.getcwd(), 'data')
-# IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
-IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
+PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+# PATH_DATA = os.path.join(os.getcwd(), 'data')
+IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
+# IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 
-MODEL_KEY = 'pretrainedFER'  # 'pretrainedFER' / 'resnet50'
+MODEL_KEY = 'resnet50'  # 'pretrainedFER' / 'resnet50'
 PRETRAINED = True
 
-EPOCHS = 5
+EPOCHS = 15
 BATCH_SIZE = 32
 
 LEARNING_RATE = 0.001

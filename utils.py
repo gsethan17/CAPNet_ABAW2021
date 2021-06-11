@@ -133,15 +133,23 @@ class CCC(Loss) :
         ccc = 2 * rho * x_s * y_s / (x_s ** 2 + y_s ** 2 + (x_m - y_m) ** 2)
         '''
         ''' Concordance Correlation Coefficient'''
-        sxy = np.sum((x - np.mean(x)) * (y - np.mean(y))) / x.shape[0]
-        ccc = 2 * sxy / (np.var(x) + np.var(y) + (np.mean(x) - np.mean(y)) ** 2)
+        # sxy = np.sum((x - np.mean(x)) * (y - np.mean(y))) / x.shape[0]
+        # ccc = 2 * sxy / (np.var(x) + np.var(y) + (np.mean(x) - np.mean(y)) ** 2)
+        x_mean = tf.math.reduce_mean(x)
+        y_mean = tf.math.reduce_mean(y)
+        x_var = tf.math.reduce_variance(x)
+        y_var = tf.math.reduce_variance(y)
+
+        sxy = tf.math.reduce_mean((x - x_mean) * (y - y_mean))
+
+        ccc = (2 * sxy) / (x_var + y_var + tf.math.pow(x_mean-y_mean, 2))
 
         return ccc
 
     def call(self, y_pred, y_true):
         items = [self.CCC_score(y_pred[:, 0], y_true[:, 0]), self.CCC_score(y_pred[:, 1], y_true[:, 1])]
-
-        return items, sum(items) / 2
+        total_ccc = tf.math.reduce_mean(items)
+        return total_ccc, items
 
 
 # Dataset

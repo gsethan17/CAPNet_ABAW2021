@@ -31,8 +31,8 @@ SAVE_PATH = os.path.join(os.getcwd(),
                          'results',
                          '{}{}_{}{}_{}'.format(tm.tm_mon,
                                                  tm.tm_mday,
-                                                 tm.hour,
-                                                 tm.min,
+                                                 tm.tm_hour,
+                                                 tm.tm_min,
                                                  MODEL_KEY))
 if not os.path.isdir(SAVE_PATH) :
     os.makedirs(SAVE_PATH)

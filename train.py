@@ -29,7 +29,7 @@ tm = time.localtime(time.time())
 
 SAVE_PATH = os.path.join(os.getcwd(),
                          'results',
-                         '{}{}_{}{}_{}'.format(tm.tm_mot,
+                         '{}{}_{}{}_{}'.format(tm.tm_mon,
                                                  tm.tm_mday,
                                                  tm.hour,
                                                  tm.min,

@@ -357,19 +357,20 @@ class Dataset_generator() :
 
 # Metric
 def CCC_score(x, y):
-    vx = x - np.mean(x)
-    vy = y - np.mean(y)
-    rho = np.sum(vx * vy) / (np.sqrt(np.sum(vx**2)) * np.sqrt(np.sum(vy**2)))
-    x_m = np.mean(x)
-    y_m = np.mean(y)
-    x_s = np.std(x)
-    y_s = np.std(y)
-    ccc = 2*rho*x_s*y_s/(x_s**2 + y_s**2 + (x_m - y_m)**2)
+    x_mean = tf.math.reduce_mean(x)
+    y_mean = tf.math.reduce_mean(y)
+    x_var = tf.math.reduce_variance(x)
+    y_var = tf.math.reduce_variance(y)
+
+    sxy = tf.math.reduce_mean((x - x_mean) * (y - y_mean))
+
+    ccc = (2 * sxy) / (x_var + y_var + tf.math.pow(x_mean - y_mean, 2))
     return ccc
 
 def metric_CCC(x, y):
     items = [CCC_score(x[:,0], y[:,0]), CCC_score(x[:,1], y[:,1])]
-    return items, sum(items) / 2
+    total_ccc = tf.math.reduce_mean(items)
+    return total_ccc, items
 
 
 

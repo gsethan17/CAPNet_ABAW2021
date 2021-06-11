@@ -37,7 +37,7 @@ def main() :
     val_result['ccc_a'] = []
     val_result['ccc_mean'] = []
 
-    loss_function = CCC
+    loss_function = metric_CCC
 
     for i in range(iteration) :
         x, y = val_dataloader[i]

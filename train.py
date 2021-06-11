@@ -162,7 +162,7 @@ def main() :
         print("{:>6} / {:>6}\t||\ttrain_loss:{:8.4f}, train_CCC:{:8.4f}, val_loss:{:8.4f}, val_CCC:{:8.4f})".format(i + 1, EPOCHS,
                                                                                       results['train_loss'],
                                                                                       results['train_CCC'],
-                                                                                      results['val_loss']
+                                                                                      results['val_loss'],
                                                                                       results['val_CCC']))
 
         # early stop

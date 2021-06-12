@@ -1,8 +1,9 @@
 import moviepy.editor as mp
 import os
 
-PATH_VIDEO = os.path.join(os.getcwd(), 'data', 'videos')
-PATH_AUDIO = os.path.join(os.getcwd(), 'data', 'audios')
+PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+PATH_VIDEO = os.path.join(PATH_DATA, 'videos')
+PATH_AUDIO = os.path.join(PATH_DATA, 'audios')
 if not os.path.isdir(PATH_AUDIO) :
     os.makedirs(PATH_AUDIO)
 

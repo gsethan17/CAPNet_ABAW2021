@@ -74,8 +74,15 @@ def main() :
     val_path = os.path.join(PATH_DATA, 'va_val_list.pickle')
     val_data = read_pickle(val_path)
 
+    print("Build the data loader")
+    st_build = time.time()
     train_dataloader = Dataloader(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    ed_train = time.time()
+    print("Train data has been build ({.1f}seconds).".format(ed_train - st_build))
+
     val_dataloader = Dataloader(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    ed_val = time.time()
+    print("Validation data has been build ({.1f}seconds).".format(ed_val - ed_train))
 
     # print(train_dataloader[0])
 
@@ -113,12 +120,14 @@ def main() :
     results['val_ccc_A'] = []
     results['val_CCC'] = []
 
+    print("Training Start...")
     for epoch in range(EPOCHS) :
         train_loss = []
         train_metric_V = []
         train_metric_A = []
         train_metric_C = []
-        
+
+        st_train = time.time()
         for i in range(len(train_dataloader)) :
 
             x_train, y_train = train_dataloader[i]
@@ -128,7 +137,7 @@ def main() :
             train_metric_V.append(train_temp_metric[0])
             train_metric_A.append(train_temp_metric[1])
             train_metric_C.append(tf.math.reduce_mean(train_temp_metric))
-
+        ed_train = time.time()
 
         results['train_loss'].append(tf.math.reduce_mean(train_loss))
         results['train_ccc_V'].append(tf.math.reduce_mean(train_metric_V))
@@ -150,7 +159,9 @@ def main() :
             val_metric_A.append(val_temp_metric[1])
             val_metric_C.append(tf.math.reduce_mean(val_temp_metric))
 
-        if tf.math.reduce_mean(val_temp_metric) < tf.math.reduce_min(val_metric_C) :
+        ed_val = time.time()
+
+        if tf.math.reduce_mean(val_temp_metric) > tf.math.reduce_max(val_metric_C) :
             # save best weights
             MODEL.save_weights(os.path.join(SAVE_PATH, "best_weights"))
 
@@ -159,11 +170,13 @@ def main() :
         results['val_ccc_A'].append(tf.math.reduce_mean(val_metric_A))
         results['val_CCC'].append(tf.math.reduce_mean(val_metric_C))
         
-        print("{:>6} / {:>6}\t||\ttrain_loss:{:8.4f}, train_CCC:{:8.4f}, val_loss:{:8.4f}, val_CCC:{:8.4f})".format(epoch + 1, EPOCHS,
+        print("{:>3} / {:>3} \t||\t train_loss:{:8.4f}, train_CCC:{:8.4f}, val_loss:{:8.4f}, val_CCC:{:8.4f} \t||\t TIME: Train {:8.1f}sec, Validation {:8.1f}sec".format(epoch + 1, EPOCHS,
                                                                                       results['train_loss'][-1],
                                                                                       results['train_CCC'][-1],
                                                                                       results['val_loss'][-1],
-                                                                                      results['val_CCC'][-1]))
+                                                                                      results['val_CCC'][-1],
+                                                                                      (ed_train - st_train),
+                                                                                      (ed_val - ed_train)))
 
         # early stop
         if epoch > 10 :

@@ -16,7 +16,7 @@ PRETRAINED = True
 # Model load to global variable
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED)
 
-EPOCHS = 15
+EPOCHS = 30
 BATCH_SIZE = 32
 SHUFFLE = True
 
@@ -118,7 +118,7 @@ def main() :
         train_metric_V = []
         train_metric_A = []
         train_metric_C = []
-
+        
         for i in range(len(train_dataloader)) :
 
             x_train, y_train = train_dataloader[i]
@@ -158,12 +158,12 @@ def main() :
         results['val_ccc_V'].append(tf.math.reduce_mean(val_metric_V))
         results['val_ccc_A'].append(tf.math.reduce_mean(val_metric_A))
         results['val_CCC'].append(tf.math.reduce_mean(val_metric_C))
-
-        print("{:>6} / {:>6}\t||\ttrain_loss:{:8.4f}, train_CCC:{:8.4f}, val_loss:{:8.4f}, val_CCC:{:8.4f})".format(i + 1, EPOCHS,
-                                                                                      results['train_loss'],
-                                                                                      results['train_CCC'],
-                                                                                      results['val_loss'],
-                                                                                      results['val_CCC']))
+        
+        print("{:>6} / {:>6}\t||\ttrain_loss:{:8.4f}, train_CCC:{:8.4f}, val_loss:{:8.4f}, val_CCC:{:8.4f})".format(epoch + 1, EPOCHS,
+                                                                                      results['train_loss'][-1],
+                                                                                      results['train_CCC'][-1],
+                                                                                      results['val_loss'][-1],
+                                                                                      results['val_CCC'][-1]))
 
         # early stop
         if epoch > 10 :

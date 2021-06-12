@@ -17,7 +17,7 @@ PRETRAINED = True
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED)
 
 EPOCHS = 30
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 SHUFFLE = True
 
 LEARNING_RATE = 0.001
@@ -131,13 +131,14 @@ def main() :
         for i in range(len(train_dataloader)) :
 
             x_train, y_train = train_dataloader[i]
-
+            print("Training : {} / {}".format(i + 1, len(train_dataloader)), end="\r")
             train_temp_loss, train_temp_metric = train_step(x_train, y_train)
             train_loss.append(train_temp_loss)
             train_metric_V.append(train_temp_metric[0])
             train_metric_A.append(train_temp_metric[1])
             train_metric_C.append(tf.math.reduce_mean(train_temp_metric))
         ed_train = time.time()
+        print("Training is completed...", end="\r")
 
         results['train_loss'].append(tf.math.reduce_mean(train_loss))
         results['train_ccc_V'].append(tf.math.reduce_mean(train_metric_V))
@@ -149,10 +150,11 @@ def main() :
         val_metric_A = []
         val_metric_C = []
 
+        print("Validation Start...", end="\r")
         for j in range(len(val_dataloader)) :
 
             x_val, y_val = val_dataloader[j]
-
+            print("Validation : {} / {}".format(j + 1, len(val_dataloader)), end="\r")
             val_temp_loss, val_temp_metric = val_step(x_val, y_val)
             val_loss.append(val_temp_loss)
             val_metric_V.append(val_temp_metric[0])
@@ -179,8 +181,8 @@ def main() :
                                                                                       (ed_val - ed_train)))
 
         # early stop
-        if epoch > 10 :
-            if results['val_CCC'][-10] > tf.math.reduce_max(results['val_CCC'][-9:]) :
+        if epoch > 5 :
+            if results['val_CCC'][-5] > tf.math.reduce_max(results['val_CCC'][-4:]) :
                 break
 
     df = pd.DataFrame(results)

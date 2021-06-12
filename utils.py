@@ -108,16 +108,12 @@ class Dataloader(Sequence) :
             np.random.shuffle(self.indices)
 
     def __getitem__(self, idx):
-        print("data loading")
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
 
         batch_x = [self.x[i] for i in indices]
-        st = time.time()
         image_x = [load_image(os.path.join(self.image_path, file_name)) for file_name in batch_x]
-        ed = time.time()
         batch_y = [self.y[i] for i in indices]
 
-        print("image loading takes {:.1f} seconds".format(ed-st))
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
 class CCC(Loss) :

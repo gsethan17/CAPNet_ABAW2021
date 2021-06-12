@@ -117,7 +117,7 @@ class Dataloader(Sequence) :
         ed = time.time()
         batch_y = [self.y[i] for i in indices]
 
-        print("image loading takes {.1f} seconds".format(ed-st))
+        print("image loading takes {:.1f} seconds".format(ed-st))
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
 class CCC(Loss) :

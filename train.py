@@ -78,11 +78,11 @@ def main() :
     st_build = time.time()
     train_dataloader = Dataloader(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
     ed_train = time.time()
-    print("Train data has been build ({.1f}seconds).".format(ed_train - st_build))
+    print("Train data has been build ({:.1f}seconds).".format(ed_train - st_build))
 
     val_dataloader = Dataloader(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
     ed_val = time.time()
-    print("Validation data has been build ({.1f}seconds).".format(ed_val - ed_train))
+    print("Validation data has been build ({:.1f}seconds).".format(ed_val - ed_train))
 
     # print(train_dataloader[0])
 

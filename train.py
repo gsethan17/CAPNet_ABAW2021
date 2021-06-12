@@ -17,7 +17,7 @@ PRETRAINED = True
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED)
 
 EPOCHS = 30
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 SHUFFLE = True
 
 LEARNING_RATE = 0.001
@@ -163,7 +163,7 @@ def main() :
 
         ed_val = time.time()
 
-        if tf.math.reduce_mean(val_temp_metric) > tf.math.reduce_max(val_metric_C) :
+        if tf.math.reduce_mean(val_temp_metric) > tf.math.reduce_max(results['val_CCC']) :
             # save best weights
             MODEL.save_weights(os.path.join(SAVE_PATH, "best_weights"))
 

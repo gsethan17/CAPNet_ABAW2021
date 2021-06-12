@@ -12,12 +12,14 @@ from base_model.ResNet import ResNet34
 from tensorflow.keras.utils import Sequence
 from tensorflow.keras.losses import Loss
 from tensorflow.keras.models import Model
+from tensorflow.keras.layers import LSTM, GRU, Dense
 from tensorflow.keras.applications import ResNet50
 
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
 PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
-PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+PATH_DATA = os.path.join(os.getcwd(), 'data')
 
 INPUT_IMAGE_SIZE = (224, 224)
 
@@ -46,8 +48,8 @@ def read_csv(path) :
     return lines
 
 # Model Load Function
-def get_model(key='pretrainedFER', preTrained = True) :
-    if key == 'pretrainedFER' :
+def get_model(key='FER', preTrained = True, window_size = 10) :
+    if key == 'FER' :
         # Model load
         model = ResNet34(cardinality = 32, se = 'parallel_add')
         
@@ -57,35 +59,109 @@ def get_model(key='pretrainedFER', preTrained = True) :
             assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
             model.load_weights(weight_path)
 
+    elif key == 'FER_LSTM' :
+        # Base model load
+        base_model = ResNet34(cardinality=32, se='parallel_add')
+
+        if preTrained:
+            # load pre-trained weights
+            weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add',
+                                       'checkpoint_4_300000-320739.ckpt')
+            assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
+            base_model.load_weights(weight_path)
+
+        base_model.build(input_shape=(None, INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3))
+
+        #############################
+        sub_model = tf.keras.Sequential()
+        sub_model.add(tf.keras.Input(shape=(INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3)))
+        for i in range(6):
+            sub_model.add(base_model.layers[i])
+
+
+        input_ = tf.keras.Input(shape=(window_size, INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3))
+        for i in range(window_size) :
+            out_ = sub_model(input_[:,i,:,:,:])
+
+            if i == 0 :
+                out_0 = tf.expand_dims(out_, axis = 1)
+            elif i == 1 :
+                out_1 = tf.expand_dims(out_, axis = 1)
+                output_ = tf.concat([out_0, out_1], axis = 1)
+            else :
+                out_3 = tf.expand_dims(out_, axis = 1)
+                output_ = tf.concat([output_, out_3], axis = 1)
+
+        lstm = LSTM(512, input_shape=(window_size, 512))(output_)
+        fo = base_model.layers[-1](lstm)
+
+        model = Model(inputs=input_, outputs=fo)
+
+
+
     elif key == 'resnet50' :
         if preTrained :
             base_model = ResNet50(include_top=False,
                                                     weights='imagenet',
-                                                    input_shape=(INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3),
+                                                    input_shape=(112, 112, 3),
                                                     pooling='avg')
         else :
             base_model = ResNet50(include_top=False,
                                                     weights=None,
-                                                    input_shape=(INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3),
+                                                    input_shape=(112, 112, 3),
                                                     pooling='avg')
 
         x = base_model.output
-        x = tf.keras.layers.Dense(1024, activation='relu')(x)
-        x = tf.keras.layers.Dense(500, activation='relu')(x)
-        output_ = tf.keras.layers.Dense(2, activation='tanh')(x)
+        x = Dense(1024, activation='relu')(x)
+        x = Dense(500, activation='relu')(x)
+        output_ = Dense(2, activation='tanh')(x)
 
         model = Model(inputs=base_model.input,
                                       outputs=output_)
+
+    elif key == 'resnet50_gru' :
+        if preTrained :
+            base_model = ResNet50(include_top=False,
+                                                    weights='imagenet',
+                                                    input_shape=(112, 112, 3),
+                                                    pooling='avg')
+        else :
+            base_model = ResNet50(include_top=False,
+                                                    weights=None,
+                                                    input_shape=(112, 112, 3),
+                                                    pooling='avg')
+
+        input_ = tf.keras.Input(shape=(window_size, 112, 112, 3))
+        for i in range(window_size):
+            feature = base_model(input_[:, i, :, :, :])
+
+            if i == 0:
+                out_0 = tf.expand_dims(feature, axis=1)
+            elif i == 1:
+                out_1 = tf.expand_dims(feature, axis=1)
+                output_ = tf.concat([out_0, out_1], axis=1)
+            else:
+                out_3 = tf.expand_dims(feature, axis=1)
+                output_ = tf.concat([output_, out_3], axis=1)
+
+        gru1 = GRU(1024, return_sequences=True)(output_)
+        gru2 = GRU(512)(gru1)
+        fo = Dense(2, activation='tanh')(gru2)
+
+        model = Model(inputs=input_, outputs=fo)
 
     return model
 
 # @tf.function
 def load_image(filename):
     # print(filename)
-    raw = tf.io.read_file(filename)
-    image = tf.image.decode_jpeg(raw, channels=3)
-    image = tf.image.resize(image, [INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1]])
-    image = image / 255.0
+    try :
+        raw = tf.io.read_file(filename)
+        image = tf.image.decode_jpeg(raw, channels=3)
+        image = tf.image.resize(image, [INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1]])
+        image = image / 255.0
+    except :
+        image = tf.zeros(INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3)
     return image
 
 

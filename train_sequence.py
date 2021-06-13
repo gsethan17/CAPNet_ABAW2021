@@ -15,8 +15,8 @@ VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_seq_list.pickle')   # 'va_val_li
 INPUT_IMAGE_SIZE = (224, 224)
 
 EPOCHS = 30
-BATCH_SIZE = 2
-SHUFFLE = True
+BATCH_SIZE = 1
+SHUFFLE = False
 
 # model load
 '''
@@ -37,11 +37,22 @@ def main() :
     train_data = read_pickle(TRAIN_DATA_PATH)
     val_data = read_pickle(VAL_DATA_PATH)
 
-    print(train_data['x'][:10], end='\n')
-    print(train_data['y'][:10], end='\n')
+    lists = []
+    for i in range(len(train_data['x'])) :
+        count = 0
+        for j, image_path in enumerate(train_data['x'][i]) :
+            image = image_path.split('/')[1].split('.')[0]
+            if image == '' :
+                count += 1
 
-    print(val_data['x'][:10], end='\n')
-    print(val_data['y'][:10], end='\n')
+        if count == 9 :
+            lists.append(i)
+
+    # print(train_data['x'][18694], end='\n')
+    # print(train_data['y'][:10], end='\n')
+    #
+    # print(val_data['x'][:10], end='\n')
+    # print(val_data['y'][:10], end='\n')
 
     train_dataloader = Dataloader_sequential(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH,
                                   image_size=INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
@@ -49,8 +60,8 @@ def main() :
     val_dataloader = Dataloader_sequential(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, image_size=INPUT_IMAGE_SIZE,
                                 batch_size=BATCH_SIZE, shuffle=SHUFFLE)
 
-    print(train_dataloader[0])
-    print(val_dataloader[0])
+    print(train_dataloader[lists[0]])
+    # print(val_dataloader[0])
 
 # input_ = tf.ones((1, 10, 112, 112, 3))
 

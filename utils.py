@@ -18,8 +18,8 @@ from tensorflow.keras.applications import ResNet50, VGG19
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
 PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
-# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
-PATH_DATA = os.path.join(os.getcwd(), 'data')
+PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+# PATH_DATA = os.path.join(os.getcwd(), 'data')
 
 INPUT_IMAGE_SIZE = (224, 224)
 
@@ -197,7 +197,7 @@ def load_image(filename, image_size):
         image = image / 255.0
     except :
         print("Image load error : ", filename)
-        image = tf.zeros(image_size[0], image_size[1], 3)
+        image = tf.zeros([image_size[0], image_size[1], 3])
     return image
 
 

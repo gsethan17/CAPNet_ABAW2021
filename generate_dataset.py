@@ -136,7 +136,18 @@ def generate_single_data() :
     with open(val_save_path, 'wb') as f :
         pickle.dump(val_data, f)
 
-def get_sequence_data(subject_name, images_list, window_size, stride) :
+def switching(name, image, switch_images, switch_subjects) :
+    if name in switch_subjects.keys():
+        if image in switch_images[name]:
+            object = switch_subjects[name]
+        else:
+            object = name
+    else:
+        object = name
+
+    return object
+
+def get_sequence_data(subject_name, images_list, window_size, stride, switch_images, switch_subjects) :
     total_x = []
     total_y = []
 
@@ -156,22 +167,26 @@ def get_sequence_data(subject_name, images_list, window_size, stride) :
                 if images_list[idx] is "" :
 
                     if idx == 0 :
-                        list_x.append(os.path.join(subject_name, images_list[idx] + '.jpg'))
+                        name = switching(subject_name, images_list[idx], switch_images, switch_subjects)
+                        list_x.append(os.path.join(name, images_list[idx]))
 
                     else :
                         for k in range(idx-1, idx-stride, -1) :
                             flag = False
 
                             if not images_list[k] is "" :
-                                list_x.append(os.path.join(subject_name, images_list[k] + '.jpg'))
+                                name = switching(subject_name, images_list[k], switch_images, switch_subjects)
+                                list_x.append(os.path.join(name, images_list[k]))
                                 flag = True
                                 break
 
                         if not flag :
-                            list_x.append(os.path.join(subject_name, images_list[idx] + '.jpg'))
+                            name = switching(subject_name, images_list[idx], switch_images, switch_subjects)
+                            list_x.append(os.path.join(name, images_list[idx]))
 
                 else :
-                    list_x.append(os.path.join(subject_name, images_list[idx] + '.jpg'))
+                    name = switching(subject_name, images_list[idx], switch_images, switch_subjects)
+                    list_x.append(os.path.join(name, images_list[idx]))
 
             list_x.reverse()
 
@@ -186,6 +201,10 @@ def get_sequence_data(subject_name, images_list, window_size, stride) :
 
 
 def generate_sequential_data(window_size, stride) :
+    # read switch info
+    switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
+    switch_subjects = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
+
     # Train data
     train_data = {
         'x': [],
@@ -196,7 +215,7 @@ def generate_sequential_data(window_size, stride) :
     for i, train_subject_list in enumerate(train_subject_lists) :
         train_images = read_csv(os.path.join(PATH_DATA_GUIDE, train_subject_list+'.csv'))
 
-        train_x, train_y = get_sequence_data(train_subject_list, train_images, window_size, stride)
+        train_x, train_y = get_sequence_data(train_subject_list, train_images, window_size, stride, switch_images, switch_subjects)
 
         train_data['x'] += train_x
         train_data['y'] += train_y
@@ -219,7 +238,7 @@ def generate_sequential_data(window_size, stride) :
     for j, val_subject_list in enumerate(val_subject_lists):
         val_images = read_csv(os.path.join(PATH_DATA_GUIDE, val_subject_list + '.csv'))
 
-        val_x, val_y = get_sequence_data(val_subject_list, val_images, window_size, stride)
+        val_x, val_y = get_sequence_data(val_subject_list, val_images, window_size, stride, switch_images, switch_subjects)
 
         val_data['x'] += val_x
         val_data['y'] += val_y

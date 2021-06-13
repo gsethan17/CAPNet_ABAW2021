@@ -1,5 +1,5 @@
 from utils import get_model
-import tensorflow as tf
+# import tensorflow as tf
 import os
 from utils import read_pickle, Dataloader_sequential
 
@@ -37,30 +37,30 @@ def main() :
     train_data = read_pickle(TRAIN_DATA_PATH)
     val_data = read_pickle(VAL_DATA_PATH)
 
-    lists = []
-    for i in range(len(train_data['x'])) :
-        count = 0
-        for j, image_path in enumerate(train_data['x'][i]) :
-            image = image_path.split('/')[1].split('.')[0]
-            if image == '' :
-                count += 1
-
-        if count == 9 :
-            lists.append(i)
-
-    # print(train_data['x'][18694], end='\n')
-    # print(train_data['y'][:10], end='\n')
+    # lists = []
+    # for i in range(len(train_data['x'])) :
+    #     count = 0
+    #     for j, image_path in enumerate(train_data['x'][i]) :
+    #         image = image_path.split('/')[1].split('.')[0]
+    #         if image == '' :
+    #             count += 1
     #
-    # print(val_data['x'][:10], end='\n')
-    # print(val_data['y'][:10], end='\n')
+    #     if count == 9 :
+    #         lists.append(i)
 
-    train_dataloader = Dataloader_sequential(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH,
-                                  image_size=INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    print(len(train_data['x']), end='\n')
+    print(len(train_data['y']), end='\n')
 
-    val_dataloader = Dataloader_sequential(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, image_size=INPUT_IMAGE_SIZE,
-                                batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    print(len(val_data['x']), end='\n')
+    print(len(val_data['y']), end='\n')
 
-    print(train_dataloader[lists[0]])
+    # train_dataloader = Dataloader_sequential(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH,
+    #                               image_size=INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+
+    # val_dataloader = Dataloader_sequential(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, image_size=INPUT_IMAGE_SIZE,
+    #                             batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+
+    # print(train_dataloader[lists[0]])
     # print(val_dataloader[0])
 
 # input_ = tf.ones((1, 10, 112, 112, 3))

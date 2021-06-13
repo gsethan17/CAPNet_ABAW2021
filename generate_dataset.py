@@ -174,11 +174,11 @@ def get_sequence_data(subject_name, images_list, window_size, stride) :
                     list_x.append(os.path.join(subject_name, images_list[idx] + '.jpg'))
 
             list_x.reverse()
-            total_x.append(list_x)
 
             # get labels
             try :
                 total_y.append([float(x) for x in list_labels[(i + 1)]])
+                total_x.append(list_x)
             except :
                 print(subject_name, i)
 
@@ -241,3 +241,12 @@ if __name__ == "__main__" :
     stride = 10
 
     generate_sequential_data(window_size, stride)
+
+    # path = os.path.join(PATH_DATA, 'annotations', 'VA_Set', '**', '327' + '.txt')
+    # print(glob.glob(path))
+    # path = glob.glob(path)[0]
+    # print(path)
+    # list_labels = read_txt(path)
+    #
+    # print(len(list_labels))
+    # print(list_labels[-1])

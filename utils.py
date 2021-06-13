@@ -229,6 +229,36 @@ class Dataloader(Sequence) :
 
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
+class Dataloader_sequential(Sequence) :
+    def __init__(self, x, y, image_path, image_size=INPUT_IMAGE_SIZE, batch_size=1, shuffle=False):
+        self.x, self.y = x, y
+        self.image_path = image_path
+        self.image_size = image_size
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.on_epoch_end()
+
+    def __len__(self):
+        return int(np.ceil(len(self.x)) / float(self.batch_size))
+
+    def on_epoch_end(self):
+        self.indices = np.arange(len(self.x))
+
+        if self.shuffle == True :
+            np.random.shuffle(self.indices)
+
+    def __getitem__(self, idx):
+        indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
+
+        batch_x = [self.x[i] for i in indices]
+        images = []
+        for file_list in batch_x :
+            image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size) for file_name in file_list]
+            images.append(image_x)
+        batch_y = [self.y[i] for i in indices]
+
+        return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
+
 class CCC(Loss) :
     def __init__(self, name="ccc"):
         super().__init__(name=name)

@@ -11,10 +11,12 @@ PATH_DATA = os.path.join(os.getcwd(), 'data')
 # IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 
-MODEL_KEY = 'pretrainedFER'  # 'pretrainedFER' / 'resnet50'
+INPUT_IMAGE_SIZE = (112, 112)
+
+MODEL_KEY = 'resnet50'  # 'FER' / 'FER_LSTM' / 'resnet50' / 'resnet50_gru' / 'vgg19_gru'
 PRETRAINED = True
 # Model load to global variable
-MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED)
+MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, input_size = INPUT_IMAGE_SIZE)
 
 EPOCHS = 30
 BATCH_SIZE = 64
@@ -76,11 +78,11 @@ def main() :
 
     print("Build the data loader")
     st_build = time.time()
-    train_dataloader = Dataloader(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    train_dataloader = Dataloader(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH, imga_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
     ed_train = time.time()
     print("Train data has been build ({:.1f}seconds).".format(ed_train - st_build))
 
-    val_dataloader = Dataloader(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    val_dataloader = Dataloader(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, imga_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
     ed_val = time.time()
     print("Validation data has been build ({:.1f}seconds).".format(ed_val - ed_train))
 
@@ -140,10 +142,10 @@ def main() :
         ed_train = time.time()
         print("Training is completed...", end="\r")
 
-        results['train_loss'].append(tf.math.reduce_mean(train_loss))
-        results['train_ccc_V'].append(tf.math.reduce_mean(train_metric_V))
-        results['train_ccc_A'].append(tf.math.reduce_mean(train_metric_A))
-        results['train_CCC'].append(tf.math.reduce_mean(train_metric_C))
+        results['train_loss'].append(tf.math.reduce_mean(train_loss).numpy())
+        results['train_ccc_V'].append(tf.math.reduce_mean(train_metric_V).numpy())
+        results['train_ccc_A'].append(tf.math.reduce_mean(train_metric_A).numpy())
+        results['train_CCC'].append(tf.math.reduce_mean(train_metric_C).numpy())
 
         val_loss = []
         val_metric_V = []
@@ -167,12 +169,12 @@ def main() :
             # save best weights
             MODEL.save_weights(os.path.join(SAVE_PATH, "best_weights"))
 
-        results['val_loss'].append(tf.math.reduce_mean(val_loss))
-        results['val_ccc_V'].append(tf.math.reduce_mean(val_metric_V))
-        results['val_ccc_A'].append(tf.math.reduce_mean(val_metric_A))
-        results['val_CCC'].append(tf.math.reduce_mean(val_metric_C))
+        results['val_loss'].append(tf.math.reduce_mean(val_loss).numpy())
+        results['val_ccc_V'].append(tf.math.reduce_mean(val_metric_V).numpy())
+        results['val_ccc_A'].append(tf.math.reduce_mean(val_metric_A).numpy())
+        results['val_CCC'].append(tf.math.reduce_mean(val_metric_C).numpy())
         
-        print("{:>3} / {:>3} \t||\t train_loss:{:8.4f}, train_CCC:{:8.4f}, val_loss:{:8.4f}, val_CCC:{:8.4f} \t||\t TIME: Train {:8.1f}sec, Validation {:8.1f}sec".format(epoch + 1, EPOCHS,
+        print("{:>3} / {:>3} || train_loss:{:8.4f}, train_CCC:{:8.4f}, val_loss:{:8.4f}, val_CCC:{:8.4f} || TIME: Train {:8.1f}sec, Validation {:8.1f}sec".format(epoch + 1, EPOCHS,
                                                                                       results['train_loss'][-1],
                                                                                       results['train_CCC'][-1],
                                                                                       results['val_loss'][-1],

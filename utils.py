@@ -13,7 +13,7 @@ from tensorflow.keras.utils import Sequence
 from tensorflow.keras.losses import Loss
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import LSTM, GRU, Dense
-from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications import ResNet50, VGG19
 
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
@@ -48,7 +48,7 @@ def read_csv(path) :
     return lines
 
 # Model Load Function
-def get_model(key='FER', preTrained = True, window_size = 10) :
+def get_model(key='FER', preTrained = True, window_size = 10, input_size = INPUT_IMAGE_SIZE) :
     if key == 'FER' :
         # Model load
         model = ResNet34(cardinality = 32, se = 'parallel_add')
@@ -70,16 +70,16 @@ def get_model(key='FER', preTrained = True, window_size = 10) :
             assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
             base_model.load_weights(weight_path)
 
-        base_model.build(input_shape=(None, INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3))
+        base_model.build(input_shape=(None, input_size[0], input_size[1], 3))
 
         #############################
         sub_model = tf.keras.Sequential()
-        sub_model.add(tf.keras.Input(shape=(INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3)))
+        sub_model.add(tf.keras.Input(shape=(input_size[0], input_size[1], 3)))
         for i in range(6):
             sub_model.add(base_model.layers[i])
 
 
-        input_ = tf.keras.Input(shape=(window_size, INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3))
+        input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
         for i in range(window_size) :
             out_ = sub_model(input_[:,i,:,:,:])
 
@@ -92,10 +92,15 @@ def get_model(key='FER', preTrained = True, window_size = 10) :
                 out_3 = tf.expand_dims(out_, axis = 1)
                 output_ = tf.concat([output_, out_3], axis = 1)
 
-        lstm = LSTM(512, input_shape=(window_size, 512))(output_)
-        fo = base_model.layers[-1](lstm)
+        lstm = LSTM(256, input_shape=(window_size, 512))(output_)
+        fo = Dense(2, activation = 'tanh')(lstm)
 
         model = Model(inputs=input_, outputs=fo)
+
+        for layer in model.layers :
+            layer.trainable = False
+        model.layers[-1].trainable = True
+        model.layers[-2].trainable = True
 
 
 
@@ -103,12 +108,12 @@ def get_model(key='FER', preTrained = True, window_size = 10) :
         if preTrained :
             base_model = ResNet50(include_top=False,
                                                     weights='imagenet',
-                                                    input_shape=(112, 112, 3),
+                                                    input_shape=(input_size[0], input_size[1], 3),
                                                     pooling='avg')
         else :
             base_model = ResNet50(include_top=False,
                                                     weights=None,
-                                                    input_shape=(112, 112, 3),
+                                                    input_shape=(input_size[0], input_size[1], 3),
                                                     pooling='avg')
 
         x = base_model.output
@@ -123,15 +128,15 @@ def get_model(key='FER', preTrained = True, window_size = 10) :
         if preTrained :
             base_model = ResNet50(include_top=False,
                                                     weights='imagenet',
-                                                    input_shape=(112, 112, 3),
+                                                    input_shape=(input_size[0], input_size[1], 3),
                                                     pooling='avg')
         else :
             base_model = ResNet50(include_top=False,
                                                     weights=None,
-                                                    input_shape=(112, 112, 3),
+                                                    input_shape=(input_size[0], input_size[1], 3),
                                                     pooling='avg')
 
-        input_ = tf.keras.Input(shape=(window_size, 112, 112, 3))
+        input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
         for i in range(window_size):
             feature = base_model(input_[:, i, :, :, :])
 
@@ -150,26 +155,58 @@ def get_model(key='FER', preTrained = True, window_size = 10) :
 
         model = Model(inputs=input_, outputs=fo)
 
+    elif key == 'vgg19_gru' :
+        if preTrained :
+            base_model = VGG19(include_top=False,
+                                                    weights='imagenet',
+                                                    input_shape=(input_size[0], input_size[1], 3),
+                                                    pooling='avg')
+        else :
+            base_model = VGG19(include_top=False,
+                                                    weights=None,
+                                                    input_shape=(input_size[0], input_size[1], 3),
+                                                    pooling='avg')
+
+        input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
+        for i in range(window_size):
+            feature = base_model(input_[:, i, :, :, :])
+
+            if i == 0:
+                out_0 = tf.expand_dims(feature, axis=1)
+            elif i == 1:
+                out_1 = tf.expand_dims(feature, axis=1)
+                output_ = tf.concat([out_0, out_1], axis=1)
+            else:
+                out_3 = tf.expand_dims(feature, axis=1)
+                output_ = tf.concat([output_, out_3], axis=1)
+
+        gru = GRU(256)(output_)
+        fo = Dense(2, activation='tanh')(gru)
+
+        model = Model(inputs=input_, outputs=fo)
+
     return model
 
 # @tf.function
-def load_image(filename):
+def load_image(filename, image_size):
     # print(filename)
     try :
         raw = tf.io.read_file(filename)
         image = tf.image.decode_jpeg(raw, channels=3)
-        image = tf.image.resize(image, [INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1]])
+        image = tf.image.resize(image, [image_size[0], image_size[1]])
         image = image / 255.0
     except :
-        image = tf.zeros(INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3)
+        print("Image load error : ", filename)
+        image = tf.zeros(image_size[0], image_size[1], 3)
     return image
 
 
 # Dataloader
 class Dataloader(Sequence) :
-    def __init__(self, x, y, image_path, batch_size=1, shuffle=False):
+    def __init__(self, x, y, image_path, image_size=INPUT_IMAGE_SIZE, batch_size=1, shuffle=False):
         self.x, self.y = x, y
         self.image_path = image_path
+        self.image_size = image_size
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.on_epoch_end()
@@ -187,7 +224,7 @@ class Dataloader(Sequence) :
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
 
         batch_x = [self.x[i] for i in indices]
-        image_x = [load_image(os.path.join(self.image_path, file_name)) for file_name in batch_x]
+        image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size) for file_name in batch_x]
         batch_y = [self.y[i] for i in indices]
 
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)

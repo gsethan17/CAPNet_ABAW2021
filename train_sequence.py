@@ -4,10 +4,10 @@ import os
 from utils import read_pickle, Dataloader_sequential
 
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
-# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
-PATH_DATA = os.path.join(os.getcwd(), 'data')
-# IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
-IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
+PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+# PATH_DATA = os.path.join(os.getcwd(), 'data')
+IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
+# IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 
 TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_seq_list.pickle')   # 'va_train_list.pickle' / 'va_train_seq_list.pickle'
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_seq_list.pickle')   # 'va_val_list.pickle' / 'va_val_seq_list.pickle'

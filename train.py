@@ -165,8 +165,8 @@ def main() :
             if results['val_CCC'][-5] > tf.math.reduce_max(results['val_CCC'][-4:]) :
                 break
 
-    df = pd.DataFrame(results)
-    df.to_csv(os.path.join(SAVE_PATH, 'Results.csv'), index=False)
+        df = pd.DataFrame(results)
+        df.to_csv(os.path.join(SAVE_PATH, 'Results.csv'), index=False)
 
 
 if __name__ == "__main__" :

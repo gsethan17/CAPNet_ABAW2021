@@ -149,7 +149,7 @@ def get_sequence_data(subject_name, images_list, window_size, stride) :
 
                 idx = i-(stride * j)
 
-                if images_list[idx] is '' :
+                if images_list[idx] is "" :
 
                     if idx == 0 :
                         list_x.append(os.path.join(subject_name, images_list[idx] + '.jpg'))
@@ -158,7 +158,7 @@ def get_sequence_data(subject_name, images_list, window_size, stride) :
                         for k in range(idx-1, idx-stride, -1) :
                             flag = False
 
-                            if not images_list[k] is '' :
+                            if not images_list[k] is "" :
                                 list_x.append(os.path.join(subject_name, images_list[k] + '.jpg'))
                                 flag = True
                                 break

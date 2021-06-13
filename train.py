@@ -11,9 +11,12 @@ PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
 IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
 # IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 
+TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_list.pickle')   # 'va_train_list.pickle' / 'va_train_seq_list.pickle'
+VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')   # 'va_val_list.pickle' / 'va_val_seq_list.pickle'
+
 INPUT_IMAGE_SIZE = (112, 112)
 
-MODEL_KEY = 'resnet50'  # 'FER' / 'FER_LSTM' / 'resnet50' / 'resnet50_gru' / 'vgg19_gru'
+MODEL_KEY = 'FER'  # 'FER' / 'FER_LSTM' / 'resnet50' / 'resnet50_gru' / 'vgg19_gru'
 PRETRAINED = True
 # Model load to global variable
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, input_size = INPUT_IMAGE_SIZE)
@@ -22,7 +25,7 @@ EPOCHS = 30
 BATCH_SIZE = 64
 SHUFFLE = True
 
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0001
 OPTIMIZER = Adam(learning_rate=LEARNING_RATE)
 LOSS = loss_ccc
 METRIC = metric_CCC
@@ -36,8 +39,7 @@ SAVE_PATH = os.path.join(os.getcwd(),
                                                  tm.tm_hour,
                                                  tm.tm_min,
                                                  MODEL_KEY))
-if not os.path.isdir(SAVE_PATH) :
-    os.makedirs(SAVE_PATH)
+
 
 @tf.function
 def train_step(X, Y) :
@@ -70,11 +72,8 @@ def val_step(X, Y) :
 
 
 def main() :
-    train_path = os.path.join(PATH_DATA, 'va_train_list.pickle')
-    train_data = read_pickle(train_path)
-
-    val_path = os.path.join(PATH_DATA, 'va_val_list.pickle')
-    val_data = read_pickle(val_path)
+    train_data = read_pickle(TRAIN_DATA_PATH)
+    val_data = read_pickle(VAL_DATA_PATH)
 
     print("Build the data loader")
     st_build = time.time()
@@ -86,29 +85,6 @@ def main() :
     ed_val = time.time()
     print("Validation data has been build ({:.1f}seconds).".format(ed_val - ed_train))
 
-    # print(train_dataloader[0])
-
-    # Data Loader setup
-    # Dataloader = Dataset_generator(PATH_DATA_GUIDE, batch_size=BATCH_SIZE)
-    # print(Dataloader.get_count())
-
-
-    # Model Loader setup
-    # model = get_model(key=MODEL_KEY,pretrained=PRETRAINED)
-    # model = get_model(key=MODEL_KEY, preTrained=PRETRAINED)
-
-    # print(model.summary())
-
-    # Model setup
-    ## use tensorflow API
-    # model.compile(optimizer=OPTIMIZER, loss=LOSS)
-
-    # model.fit(x=train_dataloader,
-    #           epochs=EPOCHS,
-    #           # callbacks=[],
-    #           validation_data=val_dataloader,
-    #           shuffle=True,
-    #           verbose=2)
 
     ## use gradient tape
     results = {}
@@ -167,6 +143,8 @@ def main() :
 
         if tf.math.reduce_mean(val_temp_metric) > tf.math.reduce_max(results['val_CCC']) :
             # save best weights
+            if not os.path.isdir(SAVE_PATH):
+                os.makedirs(SAVE_PATH)
             MODEL.save_weights(os.path.join(SAVE_PATH, "best_weights"))
 
         results['val_loss'].append(tf.math.reduce_mean(val_loss).numpy())
@@ -190,21 +168,6 @@ def main() :
     df = pd.DataFrame(results)
     df.to_csv(os.path.join(SAVE_PATH, 'Results.csv'), index=False)
 
-    '''
-    # train
-    input_, label_ = Dataloader.get_trainData()
-    print(input_.shape)
-    output_ = model.predict(input_)
-    print(output_.shape)
-    
-    loss = metric_CCC
-    
-    loss, metric = loss(output_, label_)
-    loss_v = loss[0]
-    loss_a = loss[1]
-    
-    # gradiant tape
-    '''
 
 if __name__ == "__main__" :
     main()

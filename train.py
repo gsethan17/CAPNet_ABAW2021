@@ -14,7 +14,7 @@ IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
 TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_list.pickle')   # 'va_train_list.pickle' / 'va_train_seq_list.pickle'
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')   # 'va_val_list.pickle' / 'va_val_seq_list.pickle'
 
-INPUT_IMAGE_SIZE = (112, 112)
+INPUT_IMAGE_SIZE = (224, 224)
 
 MODEL_KEY = 'FER'  # 'FER' / 'FER_LSTM' / 'resnet50' / 'resnet50_gru' / 'vgg19_gru'
 PRETRAINED = True

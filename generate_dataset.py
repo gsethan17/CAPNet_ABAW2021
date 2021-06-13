@@ -140,6 +140,10 @@ def get_sequence_data(subject_name, images_list, window_size, stride) :
     total_x = []
     total_y = []
 
+    path = os.path.join(PATH_DATA, 'annotations', 'VA_Set', '**', subject_name + '.txt')
+    path = glob.glob(path)[0]
+    list_labels = read_txt(path)
+
     for i in range(len(images_list)) :
         if i >= FPS * window_size :
 
@@ -173,10 +177,6 @@ def get_sequence_data(subject_name, images_list, window_size, stride) :
             total_x.append(list_x)
 
             # get labels
-            path = os.path.join(PATH_DATA, 'annotations', 'VA_Set', '**', subject_name + '.txt')
-            path = glob.glob(path)[0]
-
-            list_labels = read_txt(path)
             try :
                 total_y.append([float(x) for x in list_labels[(i + 1)]])
             except :
@@ -193,7 +193,7 @@ def generate_sequential_data(window_size, stride) :
     }
 
     train_subject_lists = read_csv(os.path.join(PATH_DATA, 'va_train_set.csv'))
-    for train_subject_list in train_subject_lists :
+    for i, train_subject_list in enumerate(train_subject_lists) :
         train_images = read_csv(os.path.join(PATH_DATA_GUIDE, train_subject_list+'.csv'))
 
         train_x, train_y = get_sequence_data(train_subject_list, train_images, window_size, stride)
@@ -201,7 +201,7 @@ def generate_sequential_data(window_size, stride) :
         train_data['x'] += train_x
         train_data['y'] += train_y
 
-        print(np.array(train_data['x']).shape, np.array(train_data['y']).shape, np.array(train_x).shape)
+        print(i, len(train_subject_lists), np.array(train_data['x']).shape, np.array(train_data['y']).shape, np.array(train_x).shape)
 
     print(np.array(train_data['x']).shape, np.array(train_data['y']).shape)
     if np.array(train_data['x']).shape[0] == np.array(train_data['y']).shape[0] :
@@ -216,7 +216,7 @@ def generate_sequential_data(window_size, stride) :
     }
 
     val_subject_lists = read_csv(os.path.join(PATH_DATA, 'va_val_set.csv'))
-    for val_subject_list in val_subject_lists:
+    for j, val_subject_list in enumerate(val_subject_lists):
         val_images = read_csv(os.path.join(PATH_DATA_GUIDE, val_subject_list + '.csv'))
 
         val_x, val_y = get_sequence_data(val_subject_list, val_images, window_size, stride)
@@ -224,7 +224,7 @@ def generate_sequential_data(window_size, stride) :
         val_data['x'] += val_x
         val_data['y'] += val_y
 
-        print(np.array(val_data['x']).shape, np.array(val_data['y']).shape, np.array(val_x).shape)
+        print(j, len(val_subject_lists), np.array(val_data['x']).shape, np.array(val_data['y']).shape, np.array(val_x).shape)
 
     print(np.array(val_data['x']).shape, np.array(val_data['y']).shape)
     if np.array(val_data['x']).shape[0] == np.array(val_data['y']).shape[0] :

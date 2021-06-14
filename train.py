@@ -25,7 +25,7 @@ EPOCHS = 30
 BATCH_SIZE = 64
 SHUFFLE = True
 
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.00001
 OPTIMIZER = Adam(learning_rate=LEARNING_RATE)
 LOSS = loss_ccc
 METRIC = metric_CCC
@@ -40,6 +40,20 @@ SAVE_PATH = os.path.join(os.getcwd(),
                                                  tm.tm_min,
                                                  MODEL_KEY))
 
+if not os.path.isdir(SAVE_PATH):
+    os.makedirs(SAVE_PATH)
+
+# write general setting
+f = open(os.path.join(SAVE_PATH, "setting.txt"), "w")
+setting = "Train model : {}.\nBatch size : {}.\nLearning late : {}\n".format(MODEL_KEY, BATCH_SIZE, LEARNING_RATE)
+f.write(setting)
+if PRETRAINED :
+    setting = "Pretrained model is applied\n"
+    f.write(setting)
+if SHUFFLE :
+    setting = "Shuffle is applied\n"
+    f.write(setting)
+f.close()
 
 @tf.function
 def train_step(X, Y) :

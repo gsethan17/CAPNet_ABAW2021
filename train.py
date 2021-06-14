@@ -5,6 +5,25 @@ import pandas as pd
 import os
 import time
 
+
+################### Limit GPU Memory ###################
+gpus = tf.config.experimental.list_physical_devices('GPU')
+print("########################################")
+print('{} GPU(s) is(are) available'.format(len(gpus)))
+print("########################################")
+# set the only one GPU and memory limit
+memory_limit = 1024*9
+if gpus :
+    try :
+        tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit = memory_limit)])
+        print("Use only one GPU{} limited {}MB memory".format(gpus[0], memory_limit))
+    except RuntimeError as e :
+        print(e)
+else :
+    print('GPU is not available')
+##########################################################
+
+
 PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
 PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
 # PATH_DATA = os.path.join(os.getcwd(), 'data')

@@ -150,6 +150,7 @@ def switching(name, image, switch_images, switch_subjects) :
 def get_sequence_data(subject_name, images_list, window_size, stride, switch_images, switch_subjects) :
     total_x = []
     total_y = []
+    total_idx = []
 
     path = os.path.join(PATH_DATA, 'annotations', 'VA_Set', '**', subject_name + '.txt')
     path = glob.glob(path)[0]
@@ -190,14 +191,16 @@ def get_sequence_data(subject_name, images_list, window_size, stride, switch_ima
 
             list_x.reverse()
 
-            # get labels
+            # get labels & index
             try :
                 total_y.append([float(x) for x in list_labels[(i + 1)]])
                 total_x.append(list_x)
+                total_idx.append([subject_name, i])
+
             except :
                 print(subject_name, i)
 
-    return total_x, total_y
+    return total_x, total_y, total_idx
 
 
 def generate_sequential_data(window_size, stride) :
@@ -208,17 +211,19 @@ def generate_sequential_data(window_size, stride) :
     # Train data
     train_data = {
         'x': [],
-        'y': []
+        'y': [],
+        'i': []
     }
 
     train_subject_lists = read_csv(os.path.join(PATH_DATA, 'va_train_set.csv'))
     for i, train_subject_list in enumerate(train_subject_lists) :
         train_images = read_csv(os.path.join(PATH_DATA_GUIDE, train_subject_list+'.csv'))
 
-        train_x, train_y = get_sequence_data(train_subject_list, train_images, window_size, stride, switch_images, switch_subjects)
+        train_x, train_y, train_idx = get_sequence_data(train_subject_list, train_images, window_size, stride, switch_images, switch_subjects)
 
         train_data['x'] += train_x
         train_data['y'] += train_y
+        train_data['i'] += train_idx
 
         print(i, len(train_subject_lists), np.array(train_data['x']).shape, np.array(train_data['y']).shape, np.array(train_x).shape)
 
@@ -231,17 +236,19 @@ def generate_sequential_data(window_size, stride) :
     # Validation data
     val_data = {
         'x': [],
-        'y': []
+        'y': [],
+        'i': []
     }
 
     val_subject_lists = read_csv(os.path.join(PATH_DATA, 'va_val_set.csv'))
     for j, val_subject_list in enumerate(val_subject_lists):
         val_images = read_csv(os.path.join(PATH_DATA_GUIDE, val_subject_list + '.csv'))
 
-        val_x, val_y = get_sequence_data(val_subject_list, val_images, window_size, stride, switch_images, switch_subjects)
+        val_x, val_y, val_idx = get_sequence_data(val_subject_list, val_images, window_size, stride, switch_images, switch_subjects)
 
         val_data['x'] += val_x
         val_data['y'] += val_y
+        val_data['i'] += val_idx
 
         print(j, len(val_subject_lists), np.array(val_data['x']).shape, np.array(val_data['y']).shape, np.array(val_x).shape)
 

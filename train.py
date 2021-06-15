@@ -40,14 +40,8 @@ config.read('./config.ini')
 ## path setting
 PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
-
-
-# PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
-# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
-# PATH_DATA = os.path.join(os.getcwd(), 'data')
-# IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
+PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
-
 TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_list.pickle')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')
 
@@ -58,7 +52,7 @@ INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IM
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL']['PRETRAINED']
 ### Model load to global variable
-MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, input_size = INPUT_IMAGE_SIZE)
+MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, path_weight=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE)
 
 ## train setting
 EPOCHS = int(config['TRAIN']['EPOCHS'])

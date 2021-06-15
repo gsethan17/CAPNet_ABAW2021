@@ -48,7 +48,8 @@ def read_csv(path) :
     return lines
 
 # Model Load Function
-def get_model(key='FER', preTrained = True, window_size = 10, input_size=(224,224)) :
+def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt'),
+              window_size = 10, input_size=(224,224)) :
     if key == 'FER' :
         # Model load
         model = ResNet34(cardinality = 32, se = 'parallel_add')
@@ -56,7 +57,7 @@ def get_model(key='FER', preTrained = True, window_size = 10, input_size=(224,22
         if preTrained :
             # load pre-trained weights
             # weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt')
-            weight_path = os.path.join(os.getcwd(), 'results', '614_1315_FER', 'best_weights')
+            # weight_path = os.path.join(os.getcwd(), 'results', '614_1315_FER', 'best_weights')
             assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
             model.load_weights(weight_path)
 
@@ -66,8 +67,8 @@ def get_model(key='FER', preTrained = True, window_size = 10, input_size=(224,22
 
         if preTrained:
             # load pre-trained weights
-            weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add',
-                                       'checkpoint_4_300000-320739.ckpt')
+            # weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add',
+            #                            'checkpoint_4_300000-320739.ckpt')
             assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
             base_model.load_weights(weight_path)
 

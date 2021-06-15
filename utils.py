@@ -16,12 +16,12 @@ from tensorflow.keras.layers import LSTM, GRU, Dense
 from tensorflow.keras.applications import ResNet50, VGG19
 
 
-PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
-PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
-PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+# PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
+# PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
+# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
 # PATH_DATA = os.path.join(os.getcwd(), 'data')
 
-INPUT_IMAGE_SIZE = (224, 224)
+# INPUT_IMAGE_SIZE = (224, 224)
 
 def read_pickle(path) :
     with open(path, 'rb') as f:
@@ -48,7 +48,7 @@ def read_csv(path) :
     return lines
 
 # Model Load Function
-def get_model(key='FER', preTrained = True, window_size = 10, input_size = INPUT_IMAGE_SIZE) :
+def get_model(key='FER', preTrained = True, window_size = 10, input_size=(224,224)) :
     if key == 'FER' :
         # Model load
         model = ResNet34(cardinality = 32, se = 'parallel_add')
@@ -107,9 +107,8 @@ def get_model(key='FER', preTrained = True, window_size = 10, input_size = INPUT
     elif key == 'resnet50' :
         if preTrained :
             base_model = ResNet50(include_top=False,
-                                                    weights='imagenet',
-                                                    input_shape=(input_size[0], input_size[1], 3),
-                                                    pooling='avg')
+                                  weights='imagenet',
+                                  input_shape=(input_size[0], input_size[1], 3), pooling='avg')
         else :
             base_model = ResNet50(include_top=False,
                                                     weights=None,
@@ -203,7 +202,7 @@ def load_image(filename, image_size):
 
 # Dataloader
 class Dataloader(Sequence) :
-    def __init__(self, x, y, image_path, image_size=INPUT_IMAGE_SIZE, batch_size=1, shuffle=False):
+    def __init__(self, x, y, image_path, image_size, batch_size=1, shuffle=False):
         self.x, self.y = x, y
         self.image_path = image_path
         self.image_size = image_size
@@ -230,7 +229,7 @@ class Dataloader(Sequence) :
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
 class Dataloader_sequential(Sequence) :
-    def __init__(self, x, y, image_path, image_size=INPUT_IMAGE_SIZE, batch_size=1, shuffle=False):
+    def __init__(self, x, y, image_path, image_size, batch_size=1, shuffle=False):
         self.x, self.y = x, y
         self.image_path = image_path
         self.image_size = image_size
@@ -259,12 +258,13 @@ class Dataloader_sequential(Sequence) :
 
         return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
 
+'''
 class CCC(Loss) :
     def __init__(self, name="ccc"):
         super().__init__(name=name)
 
     def CCC_score(self, x, y):
-        '''
+        
         vx = x - np.mean(x)
         vy = y - np.mean(y)
         rho = np.sum(vx * vy) / (np.sqrt(np.sum(vx ** 2)) * np.sqrt(np.sum(vy ** 2)))
@@ -273,8 +273,8 @@ class CCC(Loss) :
         x_s = np.std(x)
         y_s = np.std(y)
         ccc = 2 * rho * x_s * y_s / (x_s ** 2 + y_s ** 2 + (x_m - y_m) ** 2)
-        '''
-        ''' Concordance Correlation Coefficient'''
+        
+        # Concordance Correlation Coefficient
         # sxy = np.sum((x - np.mean(x)) * (y - np.mean(y))) / x.shape[0]
         # ccc = 2 * sxy / (np.var(x) + np.var(y) + (np.mean(x) - np.mean(y)) ** 2)
         x_mean = tf.math.reduce_mean(x)
@@ -496,7 +496,7 @@ class Dataset_generator() :
                 labels = tf.concat([labels, label], axis = 0)
 
         return labels
-
+'''
 
 def CCC_score(x, y):
     x_mean = tf.math.reduce_mean(x)

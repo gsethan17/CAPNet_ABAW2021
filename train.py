@@ -1,9 +1,11 @@
-from utils import get_model, Dataset_generator, loss_ccc, metric_CCC, read_csv, read_pickle, Dataloader, CCC
+from utils import get_model, loss_ccc, metric_CCC, read_csv, read_pickle, Dataloader
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 import pandas as pd
 import os
 import time
+import argparse
+import configparser
 
 
 ################### Limit GPU Memory ###################
@@ -24,33 +26,54 @@ else :
 ##########################################################
 
 
-PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
-PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
+# Basic configuration
+parser = argparse.ArgumentParser()
+parser.add_argument('--location', default='205',
+                    help='Enter the server environment to be trained on')
+args = parser.parse_args()
+
+args.location
+
+config = configparser.ConfigParser()
+config.read('./config.ini')
+
+## path setting
+PATH_DATA = config[args.location]['PATH_DATA']
+PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
+
+
+# PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
+# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
 # PATH_DATA = os.path.join(os.getcwd(), 'data')
-IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
-# IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
+# IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
+IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 
 TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_list.pickle')   # 'va_train_list.pickle' / 'va_train_seq_list.pickle'
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')   # 'va_val_list.pickle' / 'va_val_seq_list.pickle'
 
-INPUT_IMAGE_SIZE = (224, 224)
+## input setting
+INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
 
-MODEL_KEY = 'FER'  # 'FER' / 'FER_LSTM' / 'resnet50' / 'resnet50_gru' / 'vgg19_gru'
-PRETRAINED = True
-# Model load to global variable
+## model setting
+MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
+PRETRAINED = config['MODEL']['PRETRAINED']
+### Model load to global variable
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, input_size = INPUT_IMAGE_SIZE)
 
-EPOCHS = 30
-BATCH_SIZE = 64
-SHUFFLE = True
+## train setting
+EPOCHS = int(config['TRAIN']['EPOCHS'])
+BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
+SHUFFLE = config['TRAIN']['SHUFFLE']
 
-LEARNING_RATE = 0.00001
+LEARNING_RATE = float(config['TRAIN']['LEARNING_RATE'])
 OPTIMIZER = Adam(learning_rate=LEARNING_RATE)
 LOSS = loss_ccc
 METRIC = metric_CCC
 
+## start time setting
 tm = time.localtime(time.time())
 
+## save path setting
 SAVE_PATH = os.path.join(os.getcwd(),
                          'results',
                          '{}{}_{}{}_{}'.format(tm.tm_mon,

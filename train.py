@@ -90,10 +90,10 @@ f = open(os.path.join(SAVE_PATH, "setting.txt"), "w")
 setting = "Train model : {}.\nBatch size : {}.\nLearning late : {}\n".format(MODEL_KEY, BATCH_SIZE, LEARNING_RATE)
 f.write(setting)
 if PRETRAINED :
-    setting = "Pretrained model is applied\n"
+    setting = "Pretrained : True\n"
     f.write(setting)
 if SHUFFLE :
-    setting = "Shuffle is applied\n"
+    setting = "Shuffle : True\n"
     f.write(setting)
 f.close()
 

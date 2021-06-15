@@ -90,6 +90,7 @@ def evaluate() :
     val_metric_C = []
 
     for i in range(iteration) :
+        print("{:>3} / {:>3}".format(i+1, iteration))
         x, y = val_dataloader[i]
 
         val_temp_metric = val_step(x, y)

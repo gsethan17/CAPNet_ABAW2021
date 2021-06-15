@@ -60,6 +60,8 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             # weight_path = os.path.join(os.getcwd(), 'results', '614_1315_FER', 'best_weights')
             assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
             model.load_weights(weight_path)
+            print("The model weights has been load")
+            print(weight_path)
 
     elif key == 'FER_LSTM' :
         # Base model load

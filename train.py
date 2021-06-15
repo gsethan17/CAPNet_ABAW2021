@@ -48,8 +48,8 @@ PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 # IMAGE_PATH = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/images/cropped'
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 
-TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_list.pickle')   # 'va_train_list.pickle' / 'va_train_seq_list.pickle'
-VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')   # 'va_val_list.pickle' / 'va_val_seq_list.pickle'
+TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_list.pickle')
+VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')
 
 ## input setting
 INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
@@ -197,10 +197,10 @@ def main() :
 
         ed_val = time.time()
 
-        if tf.math.reduce_mean(val_temp_metric) > tf.math.reduce_max(results['val_CCC']) :
+        MODEL.save_weights(os.path.join(SAVE_PATH, "{}epoch_weights".format(epoch+1)))
+
+        if tf.math.reduce_mean(val_metric_C) > tf.math.reduce_max(results['val_CCC']) :
             # save best weights
-            if not os.path.isdir(SAVE_PATH):
-                os.makedirs(SAVE_PATH)
             MODEL.save_weights(os.path.join(SAVE_PATH, "best_weights"))
 
         results['val_loss'].append(tf.math.reduce_mean(val_loss).numpy())

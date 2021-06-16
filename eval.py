@@ -158,54 +158,61 @@ def write_txt(type='val') :
         flag = False
 
         # write weights information
-        f = open(os.path.join(SAVE_PATH, video_name+".txt"), "w")
-        content = "valence,arousal\n"
-        f.write(content)
+        save_file_path = os.path.join(SAVE_PATH, video_name+".txt")
 
+        if os.path.isfile(save_file_path) :
+            print("{}.txt is already exist".format(video_name))
+            continue
 
-        video_path = glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))[0]
-        if len(glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))) > 2 :
-            print("Video path is not vaild : {}".format(video_name))
-            return -1
-
-        # count total number of frame
-        capture = cv2.VideoCapture(video_path)
-        total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
-
-        # load image list
-        images_list = read_csv(os.path.join(PATH_DATA_GUIDE, video_name+'.csv'))
-
-        for i in range(int(total_len)) :
-            print("{:>5} / {:>5} || {:>5} / {:>5}".format(v + 1, len(video_list), i, int(total_len)), end='\r')
-            image_name = images_list[i]
-
-            if image_name == '' :
-                if not flag :
-                    valence = -5
-                    arousal = -5
-                else :
-                    valence = prev_val
-                    arousal = prev_aro
-
-            else :
-                image_path = os.path.join(IMAGE_PATH, video_name, image_name)
-                x = load_image(image_path, INPUT_IMAGE_SIZE)
-                x = tf.expand_dims(x, axis = 0)
-
-                predicts = MODEL(x)
-                y = tf.squeeze(predicts)
-
-                valence = y[0]
-                arousal = y[1]
-
-
-            content = "{},{}\n".format(valence, arousal)
+        else :
+            f = open(save_file_path, "w")
+            content = "valence,arousal\n"
             f.write(content)
 
-            prev_val = valence
-            prev_aro = arousal
 
-        f.close()
+            video_path = glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))[0]
+            if len(glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))) > 2 :
+                print("Video path is not vaild : {}".format(video_name))
+                return -1
+
+            # count total number of frame
+            capture = cv2.VideoCapture(video_path)
+            total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+
+            # load image list
+            images_list = read_csv(os.path.join(PATH_DATA_GUIDE, video_name+'.csv'))
+
+            for i in range(int(total_len)) :
+                print("{:>5} / {:>5} || {:>5} / {:>5}".format(v + 1, len(video_list), i, int(total_len)), end='\r')
+                image_name = images_list[i]
+
+                if image_name == '' :
+                    if not flag :
+                        valence = -5
+                        arousal = -5
+                    else :
+                        valence = prev_val
+                        arousal = prev_aro
+
+                else :
+                    image_path = os.path.join(IMAGE_PATH, video_name, image_name)
+                    x = load_image(image_path, INPUT_IMAGE_SIZE)
+                    x = tf.expand_dims(x, axis = 0)
+
+                    predicts = MODEL(x)
+                    y = tf.squeeze(predicts)
+
+                    valence = y[0]
+                    arousal = y[1]
+
+
+                content = "{},{}\n".format(valence, arousal)
+                f.write(content)
+
+                prev_val = valence
+                prev_aro = arousal
+
+            f.close()
 
 def compare() :
     folder_name = str(input("Please enter the folder name to compare : \n"))

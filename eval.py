@@ -175,7 +175,7 @@ def write_txt(type='val') :
                 video_pos = os.path.join(PATH_DATA, 'videos', video_name + '*')
 
             # video_path = glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))[0]
-            if not len(glob.glob(video_pos) == 1 :
+            if not len(glob.glob(video_pos)) == 1 :
                 print("Video path is not vaild : {}".format(video_name))
                 return -1
 

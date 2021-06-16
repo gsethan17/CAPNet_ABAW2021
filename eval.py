@@ -104,14 +104,14 @@ def evaluate() :
         print(val_temp_metric[0])
         print(tf.math.reduce_mean(val_temp_metric))
 
-        val_metric_V.append(val_temp_metric[0])
-        val_metric_A.append(val_temp_metric[1])
-        val_metric_C.append(tf.math.reduce_mean(val_temp_metric))
-        print("{:>5} / {:>5} || {:.4f}, {:.4f}, {:.4f}".format(i+1, iteration, val_metric_V, val_metric_A, val_metric_C), end='\r')
+        val_metric_V.append(val_temp_metric[0].numpy())
+        val_metric_A.append(val_temp_metric[1].numpy())
+        val_metric_C.append(tf.math.reduce_mean(val_temp_metric).numpy())
+        print("{:>5} / {:>5} || {:.4f}, {:.4f}, {:.4f}".format(i+1, iteration, val_metric_V[-1], val_metric_A[-1], val_metric_C[-1]))
 
-    CCC_V = tf.math.reduce_mean(val_metric_V).numpy()
-    CCC_A = tf.math.reduce_mean(val_metric_A).numpy()
-    CCC_M = tf.math.reduce_mean(val_metric_C).numpy()
+    CCC_V = np.mean(np.array(val_metric_V))
+    CCC_A = np.mean(np.array(val_metric_A))
+    CCC_M = np.mean(np.array((val_metric_C))
 
     print("Evaluation result!!")
     print("The CCC value of valence is {:.4f}".format(CCC_V))

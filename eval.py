@@ -105,6 +105,7 @@ def evaluate() :
         val_metric_V.append(val_temp_metric[0])
         val_metric_A.append(val_temp_metric[1])
         val_metric_C.append(tf.math.reduce_mean(val_temp_metric))
+        print("{:>5} / {:>5} || {:.4f}, {:.4f}, {:.4f}".format(i+1, iteration, val_metric_V, val_metric_A, val_metric_C), end='\r')
 
     CCC_V = tf.math.reduce_mean(val_metric_V).numpy()
     CCC_A = tf.math.reduce_mean(val_metric_A).numpy()

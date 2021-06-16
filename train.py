@@ -14,7 +14,7 @@ print("########################################")
 print('{} GPU(s) is(are) available'.format(len(gpus)))
 print("########################################")
 # set the only one GPU and memory limit
-memory_limit = 1024*9
+memory_limit = 1024*5
 if gpus :
     try :
         tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit = memory_limit)])
@@ -149,7 +149,7 @@ def main() :
 
         _, eval_metric = val_step(eval_x, eval_y)
         eval_result.append(tf.math.reduce_mean(eval_metric).numpy())
-        print("{:>5} / {:>5} || {:.4f}".format(i + 1, BATCH_SIZE*100, sum(eval_result)/len(eval_result)), end='\r')
+        print("{:>5} / {:>5} || {:.4f}".format(e + 1, BATCH_SIZE*100, sum(eval_result)/len(eval_result)), end='\r')
     print("Pre-evaluation result : ", sum(eval_result)/len(eval_result))
     val_dataloader.on_epoch_end()
 

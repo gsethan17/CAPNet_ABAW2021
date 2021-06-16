@@ -187,7 +187,7 @@ def write_txt(type='val') :
 
             # load image list
             images_list = read_csv(os.path.join(PATH_DATA_GUIDE, video_name+'.csv'))
-
+            count = 0
             for i in range(int(total_len)) :
                 print("{:>5} / {:>5} || {:>5} / {:>5}".format(v + 1, len(video_list), i, int(total_len)), end='\r')
                 image_name = images_list[i]
@@ -196,27 +196,68 @@ def write_txt(type='val') :
                     if not flag :
                         valence = -5
                         arousal = -5
+
+                        content = "{},{}\n".format(valence, arousal)
+                        f.write(content)
+
+                        prev_val = valence
+                        prev_aro = arousal
+
                     else :
-                        valence = prev_val
-                        arousal = prev_aro
+                        if count == 0 :
+                            valence = prev_val
+                            arousal = prev_aro
+
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+
+                        else :
+                            predicts = MODEL(xs)
+
+                            for i in range(len(predicts)):
+                                valence = predicts[i][0]
+                                arousal = predicts[i][1]
+
+                                content = "{},{}\n".format(valence, arousal)
+                                f.write(content)
+
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+
+                            count = 0
+                            prev_val = valence
+                            prev_aro = arousal
 
                 else :
                     image_path = os.path.join(IMAGE_PATH, video_name, image_name)
                     x = load_image(image_path, INPUT_IMAGE_SIZE)
                     x = tf.expand_dims(x, axis = 0)
 
-                    predicts = MODEL(x)
-                    y = tf.squeeze(predicts)
+                    flag = True
 
-                    valence = y[0]
-                    arousal = y[1]
+                    if count == 0 :
+                        xs = x
+                        count += 1
+                    else :
+                        xs = tf.concat([xs, x], axis = 0)
+                        count += 1
 
+                    if len(xs) < BATCH_SIZE :
+                        continue
 
-                content = "{},{}\n".format(valence, arousal)
-                f.write(content)
+                    else :
+                        predicts = MODEL(xs)
 
-                prev_val = valence
-                prev_aro = arousal
+                        for i in range(len(predicts)) :
+                            valence = predicts[i][0]
+                            arousal = predicts[i][1]
+
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+
+                        count = 0
+                        prev_val = valence
+                        prev_aro = arousal
 
             f.close()
 

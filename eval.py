@@ -143,7 +143,7 @@ def write_txt(type='val') :
     SAVE_PATH = os.path.join(os.getcwd(),
                              'results',
                              'evaluation',
-                             '{}{}_{}{}_{}'.format(tm.tm_mon,
+                             '{}{}_{}_{}_{}'.format(tm.tm_mon,
                                                    tm.tm_mday,
                                                    tm.tm_hour,
                                                    tm.tm_min,
@@ -158,7 +158,8 @@ def write_txt(type='val') :
     f.write(content)
     f.close()
 
-    # video_list = read_csv(file_path)
+    video_list = read_csv(file_path)
+    '''
     video_list = ['5-60-1920x1080-3',
                   '5-60-1920x1080-4',
                   '8-30-1280x720',
@@ -168,6 +169,7 @@ def write_txt(type='val') :
                   '16-30-1920x1080',
                   '24-30-1920x1080-1',
                   '24-30-1920x1080-2']
+    '''
     # print(video_list)
     for v, video_name in enumerate(video_list) :
         flag = False

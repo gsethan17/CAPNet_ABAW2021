@@ -123,9 +123,9 @@ def evaluate() :
         val_metric_C.append(tf.math.reduce_mean(val_temp_metric).numpy())
         print("{:>5} / {:>5} || {:.4f}".format(i+1, iteration, sum(val_metric_C)/len(val_metric_C)), end='\r')
 
-    CCC_V = np.mean(np.array(val_metric_V))
-    CCC_A = np.mean(np.array(val_metric_A))
-    CCC_M = np.mean(np.array(val_metric_C))
+    CCC_V = sum(val_metric_V) / len(val_metric_V)
+    CCC_A = sum(val_metric_A) / len(val_metric_A)
+    CCC_M = sum(val_metric_C) / len(val_metric_C)
 
     print("Evaluation result!!")
     print("The CCC value of valence is {:.4f}".format(CCC_V))

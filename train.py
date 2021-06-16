@@ -71,7 +71,7 @@ tm = time.localtime(time.time())
 ## save path setting
 SAVE_PATH = os.path.join(os.getcwd(),
                          'results',
-                         '{}{}_{}{}_{}'.format(tm.tm_mon,
+                         '{}{}_{}_{}_{}'.format(tm.tm_mon,
                                                  tm.tm_mday,
                                                  tm.tm_hour,
                                                  tm.tm_min,

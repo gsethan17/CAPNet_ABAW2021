@@ -122,15 +122,12 @@ def write_txt(type='val') :
         return -1
 
     # Save Path setting
-    tm = time.localtime(time.time())
+    weights_tag = PATH_WEIGHT.split('/')[-2]
+    # tm = time.localtime(time.time())
     SAVE_PATH = os.path.join(os.getcwd(),
                              'results',
                              'evaluation',
-                             '{}{}_{}_{}_{}'.format(tm.tm_mon,
-                                                   tm.tm_mday,
-                                                   tm.tm_hour,
-                                                   tm.tm_min,
-                                                   MODEL_KEY))
+                             weights_tag)
 
     if not os.path.isdir(SAVE_PATH):
         os.makedirs(SAVE_PATH)
@@ -215,8 +212,8 @@ def write_txt(type='val') :
             f.close()
 
 def compare() :
-    folder_name = str(input("Please enter the folder name to compare : \n"))
-    prediction_path = os.path.join(os.getcwd(), 'results', 'evaluation', folder_name)
+    weights_tag = str(input("Please enter the folder name to compare : \n"))
+    prediction_path = os.path.join(os.getcwd(), 'results', 'evaluation', weights_tag)
     prediction_lists = os.listdir(prediction_path)
     prediction_lists.pop(prediction_lists.index('Weight.txt'))
 

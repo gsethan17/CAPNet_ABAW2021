@@ -7,6 +7,23 @@ import time
 import cv2
 import glob
 
+################### Limit GPU Memory ###################
+gpus = tf.config.experimental.list_physical_devices('GPU')
+print("########################################")
+print('{} GPU(s) is(are) available'.format(len(gpus)))
+print("########################################")
+# set the only one GPU and memory limit
+memory_limit = 1024 * 9
+if gpus:
+    try:
+        tf.config.experimental.set_virtual_device_configuration(gpus[0], [
+        tf.config.experimental.VirtualDeviceConfiguration(memory_limit=memory_limit)])
+        print("Use only one GPU{} limited {}MB memory".format(gpus[0], memory_limit))
+    except RuntimeError as e:
+        print(e)
+else:
+    print('GPU is not available')
+##########################################################
 
 # Basic configuration
 parser = argparse.ArgumentParser()
@@ -100,18 +117,15 @@ def evaluate() :
         x, y = val_dataloader[i]
 
         val_temp_metric = val_step(x, y)
-        print(val_temp_metric)
-        print(val_temp_metric[0])
-        print(tf.math.reduce_mean(val_temp_metric))
 
         val_metric_V.append(val_temp_metric[0].numpy())
         val_metric_A.append(val_temp_metric[1].numpy())
         val_metric_C.append(tf.math.reduce_mean(val_temp_metric).numpy())
-        print("{:>5} / {:>5} || {:.4f}, {:.4f}, {:.4f}".format(i+1, iteration, val_metric_V[-1], val_metric_A[-1], val_metric_C[-1]))
+        print("{:>5} / {:>5} || {:.4f}".format(i+1, iteration, sum(val_metric_C)/len(val_metric_C)), end='\r')
 
     CCC_V = np.mean(np.array(val_metric_V))
     CCC_A = np.mean(np.array(val_metric_A))
-    CCC_M = np.mean(np.array((val_metric_C))
+    CCC_M = np.mean(np.array(val_metric_C))
 
     print("Evaluation result!!")
     print("The CCC value of valence is {:.4f}".format(CCC_V))

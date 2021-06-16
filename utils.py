@@ -502,6 +502,17 @@ class Dataset_generator() :
         return labels
 '''
 
+def CCC_score_np(x, y):
+    x_mean = np.mean(x)
+    y_mean = np.mean(y)
+    x_var = np.var(x)
+    y_var = np.var(y)
+
+    sxy = np.mean((x - x_mean) * (y - y_mean))
+
+    ccc = (2 * sxy) / (x_var + y_var + np.power(x_mean - y_mean, 2))
+    return ccc
+
 def CCC_score(x, y):
     x_mean = tf.math.reduce_mean(x)
     y_mean = tf.math.reduce_mean(y)

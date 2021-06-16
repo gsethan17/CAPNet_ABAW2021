@@ -1,4 +1,4 @@
-from utils import get_model, metric_CCC, read_pickle, Dataloader, read_csv, load_image
+from utils import get_model, metric_CCC, read_pickle, Dataloader, read_csv, load_image, read_txt, CCC_score_np
 import tensorflow as tf
 import os
 import argparse
@@ -6,7 +6,8 @@ import configparser
 import time
 import cv2
 import glob
-
+import numpy as np
+'''
 ################### Limit GPU Memory ###################
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print("########################################")
@@ -24,7 +25,7 @@ if gpus:
 else:
     print('GPU is not available')
 ##########################################################
-
+'''
 # Basic configuration
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',
@@ -71,24 +72,6 @@ def val_step(X, Y) :
     return metric
 
 def evaluate() :
-
-    ################### Limit GPU Memory ###################
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    print("########################################")
-    print('{} GPU(s) is(are) available'.format(len(gpus)))
-    print("########################################")
-    # set the only one GPU and memory limit
-    memory_limit = 1024 * 9
-    if gpus:
-        try:
-            tf.config.experimental.set_virtual_device_configuration(gpus[0], [
-                tf.config.experimental.VirtualDeviceConfiguration(memory_limit=memory_limit)])
-            print("Use only one GPU{} limited {}MB memory".format(gpus[0], memory_limit))
-        except RuntimeError as e:
-            print(e)
-    else:
-        print('GPU is not available')
-    ##########################################################
 
     val_data = read_pickle(VAL_DATA_PATH)
 
@@ -182,7 +165,7 @@ def write_txt(type='val') :
 
         video_path = glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))[0]
         if len(glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))) > 2 :
-            print("Video path is not vaild")
+            print("Video path is not vaild : {}".format(video_name))
             return -1
 
         # count total number of frame
@@ -224,12 +207,64 @@ def write_txt(type='val') :
 
         f.close()
 
+def compare() :
+    folder_name = str(input("Please enter the folder name to compare : \n"))
+    prediction_path = os.path.join(os.getcwd(), 'results', 'evaluation', folder_name)
+    prediction_lists = os.listdir(prediction_path)
+    prediction_lists.pop(prediction_lists.index('Weight.txt'))
+
+    total_ccc_V = []
+    total_ccc_A = []
+
+    for i, prediction_list in enumerate(prediction_lists) :
+        predictions = read_txt(os.path.join(prediction_path, prediction_list))
+
+        pred = []
+        for i in range(len(predictions)-1) :
+            pred.append([float(x) for x in predictions[(i+1)]])
+
+        pred = np.array(pred)
+
+        predictions_V = pred[:, :1]
+        predictions_A = pred[:, 1:]
+
+        gts = read_txt(os.path.join(PATH_DATA, 'annotations', 'VA_Set', 'Validation_Set', prediction_list))
+
+        gt = []
+        for j in range(len(gts)-1) :
+            gt.append([float(x) for x in gts[(j+1)]])
+        gt = np.array(gt)
+
+        gts_V = gt[:, :1]
+        gts_A = gt[:, 1:]
+
+        valence_ccc_score = CCC_score_np(predictions_V, gts_V[:len(predictions_V)])
+        arousal_ccc_score = CCC_score_np(predictions_A, gts_A[:len(predictions_A)])
+
+        total_ccc_V.append(valence_ccc_score)
+        total_ccc_A.append(arousal_ccc_score)
+
+        print("{} : {:.4f}, {:.4f}".format(prediction_list, valence_ccc_score, arousal_ccc_score))
+
+    ccc_V = sum(total_ccc_V) / len(total_ccc_V)
+    ccc_A = sum(total_ccc_A) / len(total_ccc_A)
+    ccc_M = (ccc_V + ccc_A) / 2
+
+    print("")
+    print("Comparision result!!")
+    print("The CCC value of valence is {:.4f}".format(ccc_V))
+    print("The CCC value of arousal is {:.4f}".format(ccc_A))
+    print("Total CCC value is {:.4f}".format(ccc_M))
 
 if __name__ == "__main__" :
     if args.mode == 'show' :
         evaluate()
     elif args.mode == 'write' :
         write_txt()
+    elif args.mode == 'compare' :
+        compare()
+    elif args.mode == 'write_submit' :
+        write_txt(tpye='test')
     else :
         print('Mode parser is not valid')
 

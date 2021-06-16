@@ -166,11 +166,20 @@ def write_txt(type='val') :
             content = "valence,arousal\n"
             f.write(content)
 
+            if "_" in video_name :
+                if video_name.split('_')[-1] == 'right' or video_name.split('_')[-1] == 'left' :
+                    video_pos = os.path.join(PATH_DATA, 'videos', '_'.join(video_name.split('_')[:-1]) + '*')
+                else :
+                    video_pos = os.path.join(PATH_DATA, 'videos', video_name + '*')
+            else :
+                video_pos = os.path.join(PATH_DATA, 'videos', video_name + '*')
 
-            video_path = glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))[0]
-            if len(glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))) > 2 :
+            # video_path = glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))[0]
+            if not len(glob.glob(video_pos) == 1 :
                 print("Video path is not vaild : {}".format(video_name))
                 return -1
+
+            video_path = glob.glob(video_pos)[0]
 
             # count total number of frame
             capture = cv2.VideoCapture(video_path)

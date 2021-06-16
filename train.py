@@ -50,15 +50,15 @@ INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IM
 
 ## model setting
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
-PRETRAINED = config['MODEL']['PRETRAINED']
+PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
 ### Model load to global variable
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE)
 
 ## train setting
 EPOCHS = int(config['TRAIN']['EPOCHS'])
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
-SHUFFLE = config['TRAIN']['SHUFFLE']
-LEARNING_RATE_DECAY = config['TRAIN']['LR_DECAY']
+SHUFFLE = config['TRAIN'].getboolean('SHUFFLE')
+LEARNING_RATE_DECAY = config['TRAIN'].getboolean('LR_DECAY')
 LEARNING_RATE = float(config['TRAIN']['LEARNING_RATE'])
 DECAY_CONSTANT = float(config['TRAIN']['DECAY_CONSTANT'])
 OPTIMIZER = Adam(learning_rate=LEARNING_RATE)

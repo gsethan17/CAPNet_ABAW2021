@@ -200,7 +200,7 @@ def main() :
 
         MODEL.save_weights(os.path.join(SAVE_PATH, "{}epoch_weights".format(epoch+1)))
 
-        if tf.math.reduce_mean(val_metric_C).numpu() > tf.math.reduce_max(results['val_CCC']).numpu() :
+        if tf.math.reduce_mean(val_metric_C).numpy() > tf.math.reduce_max(results['val_CCC']).numpy() :
             # save best weights
             MODEL.save_weights(os.path.join(SAVE_PATH, "best_weights"))
 

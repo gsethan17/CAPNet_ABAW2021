@@ -133,10 +133,10 @@ def write_txt(type='val') :
         os.makedirs(SAVE_PATH)
 
     # write weights information
-    f = open(os.path.join(SAVE_PATH, "Weight.txt"), "w")
-    content = "Used weights : {}\n".format(PATH_WEIGHT)
-    f.write(content)
-    f.close()
+    # f = open(os.path.join(SAVE_PATH, "Weight.txt"), "w")
+    # content = "Used weights : {}\n".format(PATH_WEIGHT)
+    # f.write(content)
+    # f.close()
 
     video_list = read_csv(file_path)
     '''
@@ -215,7 +215,7 @@ def compare() :
     weights_tag = str(input("Please enter the folder name to compare : \n"))
     prediction_path = os.path.join(os.getcwd(), 'results', 'evaluation', weights_tag)
     prediction_lists = os.listdir(prediction_path)
-    prediction_lists.pop(prediction_lists.index('Weight.txt'))
+    # prediction_lists.pop(prediction_lists.index('Weight.txt'))
 
     total_ccc_V = []
     total_ccc_A = []

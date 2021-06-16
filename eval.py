@@ -97,10 +97,12 @@ def evaluate() :
     val_metric_C = []
 
     for i in range(iteration) :
-        print("{:>5} / {:>5}".format(i+1, iteration), end='\r')
         x, y = val_dataloader[i]
 
         val_temp_metric = val_step(x, y)
+        print(val_temp_metric)
+        print(val_temp_metric[0])
+        print(tf.math.reduce_mean(val_temp_metric))
 
         val_metric_V.append(val_temp_metric[0])
         val_metric_A.append(val_temp_metric[1])

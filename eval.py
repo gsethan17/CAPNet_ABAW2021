@@ -200,9 +200,6 @@ def write_txt(type='val') :
                         content = "{},{}\n".format(valence, arousal)
                         f.write(content)
 
-                        prev_val = valence
-                        prev_aro = arousal
-
                     else :
                         if count == 0 :
                             valence = prev_val
@@ -243,7 +240,22 @@ def write_txt(type='val') :
                         count += 1
 
                     if len(xs) < BATCH_SIZE :
-                        continue
+                        if i == (int(total_len) - 1) :
+                            predicts = MODEL(xs)
+
+                            for i in range(len(predicts)):
+                                valence = predicts[i][0]
+                                arousal = predicts[i][1]
+
+                                content = "{},{}\n".format(valence, arousal)
+                                f.write(content)
+
+                            count = 0
+                            prev_val = valence
+                            prev_aro = arousal
+
+                        else :
+                            continue
 
                     else :
                         predicts = MODEL(xs)

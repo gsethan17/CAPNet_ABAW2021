@@ -12,6 +12,9 @@ import glob
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',
                     help='Enter the server environment to be trained on')
+parser.add_argument('--mode', default='show',
+                    help='Enter the desired mode between write and show')
+
 args = parser.parse_args()
 
 args.location
@@ -204,8 +207,12 @@ def write_txt(type='val') :
 
 
 if __name__ == "__main__" :
-    # evaluate()
-    write_txt()
+    if args.mode == 'show' :
+        evaluate()
+    elif args.mode == 'write' :
+        write_txt()
+    else :
+        print('Mode parser is not valid')
 
     # input_ = tf.ones((1, 224, 224, 3))
     # result = MODEL(input_)

@@ -14,7 +14,7 @@ print("########################################")
 print('{} GPU(s) is(are) available'.format(len(gpus)))
 print("########################################")
 # set the only one GPU and memory limit
-memory_limit = 1024 * 9
+memory_limit = 1024 * 5
 if gpus:
     try:
         tf.config.experimental.set_virtual_device_configuration(gpus[0], [
@@ -168,11 +168,11 @@ def write_txt(type='val') :
 
             if "_" in video_name :
                 if video_name.split('_')[-1] == 'right' or video_name.split('_')[-1] == 'left' :
-                    video_pos = os.path.join(PATH_DATA, 'videos', '_'.join(video_name.split('_')[:-1]) + '*')
+                    video_pos = os.path.join(PATH_DATA, 'videos', '_'.join(video_name.split('_')[:-1]) + '.*')
                 else :
-                    video_pos = os.path.join(PATH_DATA, 'videos', video_name + '*')
+                    video_pos = os.path.join(PATH_DATA, 'videos', video_name + '.*')
             else :
-                video_pos = os.path.join(PATH_DATA, 'videos', video_name + '*')
+                video_pos = os.path.join(PATH_DATA, 'videos', video_name + '.*')
 
             # video_path = glob.glob(os.path.join(PATH_DATA, 'videos', video_name.split('_')[0] +'*'))[0]
             if not len(glob.glob(video_pos)) == 1 :

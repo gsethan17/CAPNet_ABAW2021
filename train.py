@@ -96,14 +96,11 @@ if SHUFFLE :
 f.close()
 
 @tf.function
-def train_step(X, Y, epoch) :
+def train_step(X, Y) :
     global MODEL
     global LOSS
     global METRIC
     global OPTIMIZER
-
-    if LEARNING_RATE_DECAY :
-        OPTIMIZER = Adam(learning_rate=(LEARNING_RATE-(epoch*DECAY_CONSTANT)))
 
     with tf.GradientTape() as tape :
         predictions = MODEL(X)
@@ -157,6 +154,9 @@ def main() :
 
     print("Training Start...")
     for epoch in range(EPOCHS) :
+        if LEARNING_RATE_DECAY:
+            OPTIMIZER = Adam(learning_rate=(LEARNING_RATE - (epoch * DECAY_CONSTANT)))
+
         train_loss = []
         train_metric_V = []
         train_metric_A = []
@@ -167,7 +167,7 @@ def main() :
 
             x_train, y_train = train_dataloader[i]
             print("Training : {} / {}".format(i + 1, len(train_dataloader)), end="\r")
-            train_temp_loss, train_temp_metric = train_step(x_train, y_train, epoch)
+            train_temp_loss, train_temp_metric = train_step(x_train, y_train)
             train_loss.append(train_temp_loss)
             train_metric_V.append(train_temp_metric[0])
             train_metric_A.append(train_temp_metric[1])
@@ -208,7 +208,7 @@ def main() :
         results['val_ccc_V'].append(tf.math.reduce_mean(val_metric_V).numpy())
         results['val_ccc_A'].append(tf.math.reduce_mean(val_metric_A).numpy())
         results['val_CCC'].append(tf.math.reduce_mean(val_metric_C).numpy())
-        
+
         print("{:>3} / {:>3} || train_loss:{:8.4f}, train_CCC:{:8.4f}, val_loss:{:8.4f}, val_CCC:{:8.4f} || TIME: Train {:8.1f}sec, Validation {:8.1f}sec".format(epoch + 1, EPOCHS,
                                                                                       results['train_loss'][-1],
                                                                                       results['train_CCC'][-1],

@@ -58,8 +58,9 @@ MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT,
 EPOCHS = int(config['TRAIN']['EPOCHS'])
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
 SHUFFLE = config['TRAIN']['SHUFFLE']
-
+LEARNING_RATE_DECAY = config['TRAIN']['LR_DECAY']
 LEARNING_RATE = float(config['TRAIN']['LEARNING_RATE'])
+DECAY_CONSTANT = float(config['TRAIN']['DECAY_CONSTANT'])
 OPTIMIZER = Adam(learning_rate=LEARNING_RATE)
 LOSS = loss_ccc
 METRIC = metric_CCC
@@ -81,10 +82,13 @@ if not os.path.isdir(SAVE_PATH):
 
 # write general setting
 f = open(os.path.join(SAVE_PATH, "setting.txt"), "w")
-setting = "Train model : {}.\nBatch size : {}.\nLearning late : {}\n".format(MODEL_KEY, BATCH_SIZE, LEARNING_RATE)
+setting = "Train model : {}.\nBatch size : {}.\nLearning rate : {}\n".format(MODEL_KEY, BATCH_SIZE, LEARNING_RATE)
 f.write(setting)
+if LEARNING_RATE_DECAY :
+    setting = "Learning rate decay constant : {}\n".format(DECAY_CONSTANT)
+    f.write(setting)
 if PRETRAINED :
-    setting = "Pretrained : True\n"
+    setting = "Pretrained : True\nWeight path : {}\n".format(PATH_WEIGHT)
     f.write(setting)
 if SHUFFLE :
     setting = "Shuffle : True\n"
@@ -92,11 +96,14 @@ if SHUFFLE :
 f.close()
 
 @tf.function
-def train_step(X, Y) :
+def train_step(X, Y, epoch) :
     global MODEL
     global LOSS
     global METRIC
     global OPTIMIZER
+
+    if LEARNING_RATE_DECAY :
+        OPTIMIZER = Adam(learning_rate=(LEARNING_RATE-(epoch*DECAY_CONSTANT)))
 
     with tf.GradientTape() as tape :
         predictions = MODEL(X)
@@ -160,7 +167,7 @@ def main() :
 
             x_train, y_train = train_dataloader[i]
             print("Training : {} / {}".format(i + 1, len(train_dataloader)), end="\r")
-            train_temp_loss, train_temp_metric = train_step(x_train, y_train)
+            train_temp_loss, train_temp_metric = train_step(x_train, y_train, epoch)
             train_loss.append(train_temp_loss)
             train_metric_V.append(train_temp_metric[0])
             train_metric_A.append(train_temp_metric[1])
@@ -193,7 +200,7 @@ def main() :
 
         MODEL.save_weights(os.path.join(SAVE_PATH, "{}epoch_weights".format(epoch+1)))
 
-        if tf.math.reduce_mean(val_metric_C) > tf.math.reduce_max(results['val_CCC']) :
+        if tf.math.reduce_mean(val_metric_C).numpu() > tf.math.reduce_max(results['val_CCC']).numpu() :
             # save best weights
             MODEL.save_weights(os.path.join(SAVE_PATH, "best_weights"))
 

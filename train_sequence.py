@@ -5,7 +5,6 @@ import os
 import time
 import argparse
 import configparser
-import numpy as np
 
 '''
 ################### Limit GPU Memory ###################
@@ -144,7 +143,8 @@ def main() :
                                              batch_size=BATCH_SIZE,
                                              shuffle=SHUFFLE)
 
-    print(np.shape(train_dataloader[0]))
+    print(tf.shape(train_dataloader[0]))
+    print(tf.shape(train_dataloader[1]))
     '''
     ## use gradient tape
     results = {}

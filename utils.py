@@ -73,9 +73,11 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             #                            'checkpoint_4_300000-320739.ckpt')
             assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
             base_model.load_weights(weight_path)
+            print("The model weights has been load")
+            print(weight_path)
 
         base_model.build(input_shape=(None, input_size[0], input_size[1], 3))
-
+        print(base_model.summary())
         #############################
         sub_model = tf.keras.Sequential()
         sub_model.add(tf.keras.Input(shape=(input_size[0], input_size[1], 3)))
@@ -233,8 +235,8 @@ class Dataloader(Sequence) :
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
 class Dataloader_sequential(Sequence) :
-    def __init__(self, x, y, image_path, image_size, batch_size=1, shuffle=False):
-        self.x, self.y = x, y
+    def __init__(self, x, y, idx, image_path, image_size, batch_size=1, shuffle=False):
+        self.x, self.y, self.idx = x, y, idx
         self.image_path = image_path
         self.image_size = image_size
         self.batch_size = batch_size

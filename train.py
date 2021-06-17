@@ -58,9 +58,9 @@ MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT,
 EPOCHS = int(config['TRAIN']['EPOCHS'])
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
 SHUFFLE = config['TRAIN'].getboolean('SHUFFLE')
-LEARNING_RATE_DECAY = config['TRAIN'].getboolean('LR_DECAY')
+# LEARNING_RATE_DECAY = config['TRAIN'].getboolean('LR_DECAY')
 LEARNING_RATE = float(config['TRAIN']['LEARNING_RATE'])
-DECAY_CONSTANT = float(config['TRAIN']['DECAY_CONSTANT'])
+# DECAY_CONSTANT = float(config['TRAIN']['DECAY_CONSTANT'])
 OPTIMIZER = Adam(learning_rate=LEARNING_RATE)
 LOSS = loss_ccc
 METRIC = metric_CCC
@@ -84,9 +84,9 @@ if not os.path.isdir(SAVE_PATH):
 f = open(os.path.join(SAVE_PATH, "setting.txt"), "w")
 setting = "Train model : {}.\nBatch size : {}.\nLearning rate : {}\n".format(MODEL_KEY, BATCH_SIZE, LEARNING_RATE)
 f.write(setting)
-if LEARNING_RATE_DECAY :
-    setting = "Learning rate decay constant : {}\n".format(DECAY_CONSTANT)
-    f.write(setting)
+# if LEARNING_RATE_DECAY :
+#     setting = "Learning rate decay constant : {}\n".format(DECAY_CONSTANT)
+#     f.write(setting)
 if PRETRAINED :
     setting = "Pretrained : True\nWeight path : {}\n".format(PATH_WEIGHT)
     f.write(setting)

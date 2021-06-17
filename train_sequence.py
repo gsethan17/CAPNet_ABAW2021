@@ -46,13 +46,13 @@ VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_seq_list.pickle')
 
 ## input setting
 INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
-
+'''
 ## model setting
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
 ### Model load to global variable
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE)
-
+'''
 ## train setting
 EPOCHS = int(config['TRAIN']['EPOCHS'])
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
@@ -62,7 +62,7 @@ LEARNING_RATE = float(config['TRAIN']['LEARNING_RATE'])
 OPTIMIZER = Adam(learning_rate=LEARNING_RATE)
 LOSS = loss_ccc
 METRIC = metric_CCC
-
+'''
 ## start time setting
 tm = time.localtime(time.time())
 
@@ -90,7 +90,7 @@ if SHUFFLE :
     setting = "Shuffle : True\n"
     f.write(setting)
 f.close()
-
+'''
 @tf.function
 def train_step(X, Y) :
     global MODEL

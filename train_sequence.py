@@ -123,9 +123,7 @@ def val_step(X, Y) :
 def main() :
     train_data = read_pickle(TRAIN_DATA_PATH)
     val_data = read_pickle(VAL_DATA_PATH)
-    print(train_data['x'][:2])
-    print(train_data['y'][:2])
-    print(train_data['i'][:2])
+
 
     train_dataloader = Dataloader_sequential(x=train_data['x'],
                                              y=train_data['y'],

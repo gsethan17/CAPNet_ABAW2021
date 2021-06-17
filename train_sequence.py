@@ -143,7 +143,7 @@ def main() :
                                              batch_size=BATCH_SIZE,
                                              shuffle=SHUFFLE)
 
-    print(train_dataloader[0].shape)
+    print(train_dataloader[0].shape())
     '''
     ## use gradient tape
     results = {}

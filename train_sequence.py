@@ -143,8 +143,9 @@ def main() :
                                              batch_size=BATCH_SIZE,
                                              shuffle=SHUFFLE)
 
-    print(tf.shape(train_dataloader[0]))
-    print(tf.shape(train_dataloader[1]))
+    x, y = train_dataloader[0]
+    print(tf.shape(x))
+    print(tf.shape(y))
     '''
     ## use gradient tape
     results = {}

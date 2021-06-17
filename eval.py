@@ -43,6 +43,7 @@ config.read('./config.ini')
 ## path setting
 PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
+PATH_SWITCH_INFO = config[args.location]['PATH_SWITCH_INFO']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')
@@ -115,6 +116,17 @@ def evaluate() :
     print("The CCC value of arousal is {:.4f}".format(CCC_A))
     print("Total CCC value is {:.4f}".format(CCC_M))
 
+def switching(name, image, switch_images, switch_subjects) :
+    if name in switch_subjects.keys():
+        if image in switch_images[name]:
+            object = switch_subjects[name]
+        else:
+            object = name
+    else:
+        object = name
+
+    return object
+
 def write_txt(type='val') :
     file_path = os.path.join(PATH_DATA, 'va_{}_set.csv'.format(type))
     if not os.path.isfile(file_path) :
@@ -131,6 +143,10 @@ def write_txt(type='val') :
 
     if not os.path.isdir(SAVE_PATH):
         os.makedirs(SAVE_PATH)
+
+    # load switching info
+    switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
+    switch_subjects = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
 
     # write weights information
     # f = open(os.path.join(SAVE_PATH, "Weight.txt"), "w")
@@ -226,7 +242,8 @@ def write_txt(type='val') :
                             prev_aro = arousal
 
                 else :
-                    image_path = os.path.join(IMAGE_PATH, video_name, image_name)
+                    object = switching(video_name, image_name, switch_images, switch_subjects)
+                    image_path = os.path.join(IMAGE_PATH, object, image_name)
                     x = load_image(image_path, INPUT_IMAGE_SIZE)
                     x = tf.expand_dims(x, axis = 0)
 

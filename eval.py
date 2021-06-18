@@ -278,7 +278,7 @@ def write_sequence(type='val') :
                         prev_val = valence
                         prev_aro = arousal
 
-                f.close()
+            f.close()
 
 def write_txt(type='val') :
     file_path = os.path.join(PATH_DATA, 'va_{}_set.csv'.format(type))

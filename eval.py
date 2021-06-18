@@ -259,9 +259,9 @@ def write_sequence(type='val') :
                         image_path = os.path.join(IMAGE_PATH, object, image_name)
                         x = load_image(image_path, INPUT_IMAGE_SIZE)
                         x = tf.expand_dims(x, axis=0)
-
+                        print(x.shape)
                         predicts = BASE_MODEL(x)
-
+                        print(predicts.shape)
                         valence = predicts[0]
                         arousal = predicts[1]
 

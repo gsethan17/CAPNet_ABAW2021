@@ -135,7 +135,7 @@ def write_sequence(type='val') :
 
     # Save Path setting
     # weights_tag = PATH_WEIGHT.split('/')[-2]
-    weights_tag = PATH_WEIGHT.split('\\')[-2]
+    weights_tag = PATH_WEIGHT.split('/')[-2]
     # tm = time.localtime(time.time())
     SAVE_PATH = os.path.join(os.getcwd(),
                              'results',

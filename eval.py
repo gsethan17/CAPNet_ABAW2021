@@ -135,8 +135,7 @@ def write_sequence(type='val') :
         return -1
 
     # Save Path setting
-    # weights_tag = PATH_WEIGHT.split('/')[-2]
-    weights_tag = PATH_WEIGHT.split('/')[-2]
+    weights_tag = PATH_SEQ_WEIGHT.split('/')[-2]
     # tm = time.localtime(time.time())
     SAVE_PATH = os.path.join(os.getcwd(),
                              'results',
@@ -262,8 +261,8 @@ def write_sequence(type='val') :
                         print(x.shape)
                         predicts = BASE_MODEL(x)
                         print(predicts.shape)
-                        valence = predicts[0]
-                        arousal = predicts[1]
+                        valence = predicts[0][0]
+                        arousal = predicts[0][1]
 
                         content = "{},{}\n".format(valence, arousal)
                         f.write(content)

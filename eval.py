@@ -7,7 +7,7 @@ import time
 import cv2
 import glob
 import numpy as np
-
+'''
 ################### Limit GPU Memory ###################
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print("########################################")
@@ -25,7 +25,7 @@ if gpus:
 else:
     print('GPU is not available')
 ##########################################################
-
+'''
 # Basic configuration
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',
@@ -127,6 +127,159 @@ def switching(name, image, switch_images, switch_subjects) :
 
     return object
 
+def write_sequence(type='val') :
+    file_path = os.path.join(PATH_DATA, 'va_{}_set.csv'.format(type))
+    if not os.path.isfile(file_path):
+        print("type variable is not valid")
+        return -1
+
+    # Save Path setting
+    # weights_tag = PATH_WEIGHT.split('/')[-2]
+    weights_tag = PATH_WEIGHT.split('\\')[-2]
+    # tm = time.localtime(time.time())
+    SAVE_PATH = os.path.join(os.getcwd(),
+                             'results',
+                             'evaluation',
+                             weights_tag)
+
+    if not os.path.isdir(SAVE_PATH):
+        os.makedirs(SAVE_PATH)
+
+    # load dataset
+    data_path = os.path.join(PATH_DATA, 'va_{}_seq_list.pickle'.format(type))
+    data = read_pickle(data_path)
+
+    video_list = read_csv(file_path)
+
+    for v, video_name in enumerate(video_list):
+        flag = False
+
+        # write weights information
+        save_file_path = os.path.join(SAVE_PATH, video_name + ".txt")
+
+        if os.path.isfile(save_file_path):
+            print("{}.txt is already exist".format(video_name))
+            continue
+
+        else:
+
+            f = open(save_file_path, "w")
+            content = "valence,arousal\n"
+            f.write(content)
+
+
+            if "_" in video_name:
+                if video_name.split('_')[-1] == 'right' or video_name.split('_')[-1] == 'left':
+                    video_rep = '_'.join(video_name.split('_')[:-1])
+                else:
+                    video_rep = video_name
+            else:
+                video_rep = video_name
+
+            video_pos = os.path.join(PATH_DATA, 'videos', video_rep + '.*')
+
+            if not len(glob.glob(video_pos)) == 1:
+                print("Video path is not vaild : {}".format(video_name))
+                return -1
+
+            video_path = glob.glob(video_pos)[0]
+
+            # count total number of frame
+            capture = cv2.VideoCapture(video_path)
+            total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+
+            count = 0
+            for i in range(int(total_len)):
+                print("{:>5} / {:>5} || {:>5} / {:>5}".format(v + 1, len(video_list), i, int(total_len)), end='\r')
+                print((video_name, i), end='')
+
+                try :
+                    idx = data['i'].index([video_name, i])
+                except :
+                    idx = -1
+
+
+                if idx == -1 :
+                    if not flag:
+                        valence = -5
+                        arousal = -5
+
+                        content = "{},{}\n".format(valence, arousal)
+                        f.write(content)
+
+    
+                    else:
+                        if count == 0:
+                            valence = prev_val
+                            arousal = prev_aro
+
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+
+                        else:
+                            predicts = MODEL(xs)
+    
+                            for i in range(len(predicts)):
+                                valence = predicts[i][0]
+                                arousal = predicts[i][1]
+    
+                                content = "{},{}\n".format(valence, arousal)
+                                f.write(content)
+    
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+    
+                            count = 0
+                            prev_val = valence
+                            prev_aro = arousal
+
+                else:
+                    x = [load_image(os.path.join(IMAGE_PATH, file_name), INPUT_IMAGE_SIZE) for file_name in data['x'][idx]]
+                    x = tf.expand_dims(x, axis=0)
+
+                    flag = True
+
+                    if count == 0:
+                        xs = x
+                        count += 1
+                    else:
+                        xs = tf.concat([xs, x], axis=0)
+                        count += 1
+
+                    if len(xs) < BATCH_SIZE:
+                        if i == (int(total_len) - 1):
+                            predicts = MODEL(xs)
+
+                            for i in range(len(predicts)):
+                                valence = predicts[i][0]
+                                arousal = predicts[i][1]
+
+                                content = "{},{}\n".format(valence, arousal)
+                                f.write(content)
+
+                            count = 0
+                            prev_val = valence
+                            prev_aro = arousal
+
+                        else:
+                            continue
+
+                    else:
+                        predicts = MODEL(xs)
+
+                        for i in range(len(predicts)):
+                            valence = predicts[i][0]
+                            arousal = predicts[i][1]
+
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+
+                        count = 0
+                        prev_val = valence
+                        prev_aro = arousal
+
+                f.close()
+
 def write_txt(type='val') :
     file_path = os.path.join(PATH_DATA, 'va_{}_set.csv'.format(type))
     if not os.path.isfile(file_path) :
@@ -155,7 +308,7 @@ def write_txt(type='val') :
     # f.close()
 
     video_list = read_csv(file_path)
-    '''
+    
     video_list = ['5-60-1920x1080-3',
                   '5-60-1920x1080-4',
                   '8-30-1280x720',
@@ -165,7 +318,7 @@ def write_txt(type='val') :
                   '16-30-1920x1080',
                   '24-30-1920x1080-1',
                   '24-30-1920x1080-2']
-    '''
+    
     # print(video_list)
     for v, video_name in enumerate(video_list) :
         flag = False
@@ -344,10 +497,14 @@ if __name__ == "__main__" :
         evaluate()
     elif args.mode == 'write' :
         write_txt()
+    elif args.mode == 'write_seq' :
+        write_sequence()
     elif args.mode == 'compare' :
         compare()
     elif args.mode == 'write_submit' :
         write_txt(tpye='test')
+    elif args.mode == 'write_seq_submit' :
+        write_sequence(tpye='test')
     else :
         print('Mode parser is not valid')
 

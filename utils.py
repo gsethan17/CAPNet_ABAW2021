@@ -67,14 +67,13 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         # Base model load
         base_model = ResNet34(cardinality=32, se='parallel_add')
 
-        if preTrained:
-            # load pre-trained weights
-            # weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add',
-            #                            'checkpoint_4_300000-320739.ckpt')
-            assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
-            base_model.load_weights(weight_path)
-            print("The model weights has been load")
-            print(weight_path)
+        # load pre-trained weights of base model
+        base_weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add',
+                                   'checkpoint_4_300000-320739.ckpt')
+        assert len(glob.glob(base_weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
+        base_model.load_weights(base_weight_path)
+        print("The base model weights has been load")
+        print(base_weight_path)
 
         base_model.build(input_shape=(None, input_size[0], input_size[1], 3))
         #############################
@@ -101,6 +100,12 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         fo = Dense(2, activation = 'tanh')(lstm)
 
         model = Model(inputs=input_, outputs=fo)
+
+        if preTrained:
+            assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
+            model.load_weights(weight_path)
+            print("The model weights has been load")
+            print(weight_path)
 
         for layer in model.layers :
             layer.trainable = False

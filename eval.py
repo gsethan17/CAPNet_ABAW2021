@@ -45,6 +45,7 @@ PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_SWITCH_INFO = config[args.location]['PATH_SWITCH_INFO']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
+PATH_SEQ_WEIGHT = config[args.location]['PATH_SEQ_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')
 
@@ -55,7 +56,7 @@ INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IM
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
 ### Model load to global variable
-MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE)
+BASE_MODEL, MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, weight_seq_path=PATH_SEQ_WEIGHT, input_size = INPUT_IMAGE_SIZE)
 
 ## evaluation setting
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
@@ -149,6 +150,10 @@ def write_sequence(type='val') :
     data_path = os.path.join(PATH_DATA, 'va_{}_seq_list.pickle'.format(type))
     data = read_pickle(data_path)
 
+    # load switching info
+    switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
+    switch_subjects = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
+
     video_list = read_csv(file_path)
 
     for v, video_name in enumerate(video_list):
@@ -188,6 +193,7 @@ def write_sequence(type='val') :
             capture = cv2.VideoCapture(video_path)
             total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
 
+            images_list = read_csv(os.path.join(PATH_DATA_GUIDE, video_name + '.csv'))
             count = 0
             for i in range(int(total_len)):
                 print("{:>5} / {:>5} || {:>5} / {:>5}".format(v + 1, len(video_list), i, int(total_len)), end='\r')
@@ -198,40 +204,74 @@ def write_sequence(type='val') :
                 except :
                     idx = -1
 
-
                 if idx == -1 :
-                    if not flag:
-                        valence = -5
-                        arousal = -5
+
+                    image_name = images_list[i]
+
+                    if image_name == '':
+
+                        if not flag:
+                            valence = -5
+                            arousal = -5
+
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+
+    
+                        else:
+                            if count == 0:
+                                valence = prev_val
+                                arousal = prev_aro
+
+                                content = "{},{}\n".format(valence, arousal)
+                                f.write(content)
+
+                            else:
+                                predicts = MODEL(xs)
+
+                                for i in range(len(predicts)):
+                                    valence = predicts[i][0]
+                                    arousal = predicts[i][1]
+
+                                    content = "{},{}\n".format(valence, arousal)
+                                    f.write(content)
+
+                                content = "{},{}\n".format(valence, arousal)
+                                f.write(content)
+
+                                count = 0
+                                prev_val = valence
+                                prev_aro = arousal
+
+                    else :
+                        if count != 0 :
+                            predicts = MODEL(xs)
+
+                            for i in range(len(predicts)):
+                                valence = predicts[i][0]
+                                arousal = predicts[i][1]
+
+                                content = "{},{}\n".format(valence, arousal)
+                                f.write(content)
+                            count = 0
+
+                        object = switching(video_name, image_name, switch_images, switch_subjects)
+                        image_path = os.path.join(IMAGE_PATH, object, image_name)
+                        x = load_image(image_path, INPUT_IMAGE_SIZE)
+                        x = tf.expand_dims(x, axis=0)
+
+                        predicts = BASE_MODEL(x)
+
+                        valence = predicts[0]
+                        arousal = predicts[1]
 
                         content = "{},{}\n".format(valence, arousal)
                         f.write(content)
 
-    
-                    else:
-                        if count == 0:
-                            valence = prev_val
-                            arousal = prev_aro
+                        prev_val = valence
+                        prev_aro = arousal
 
-                            content = "{},{}\n".format(valence, arousal)
-                            f.write(content)
-
-                        else:
-                            predicts = MODEL(xs)
-    
-                            for i in range(len(predicts)):
-                                valence = predicts[i][0]
-                                arousal = predicts[i][1]
-    
-                                content = "{},{}\n".format(valence, arousal)
-                                f.write(content)
-    
-                            content = "{},{}\n".format(valence, arousal)
-                            f.write(content)
-    
-                            count = 0
-                            prev_val = valence
-                            prev_aro = arousal
+                        flag = True
 
                 else:
                     x = [load_image(os.path.join(IMAGE_PATH, file_name), INPUT_IMAGE_SIZE) for file_name in data['x'][idx]]

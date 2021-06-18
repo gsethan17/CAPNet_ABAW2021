@@ -49,6 +49,7 @@ def read_csv(path) :
 
 # Model Load Function
 def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt'),
+              weight_seq_path=os.path.join(os.getcwd(), 'results', '618_0_42_FER_LSTM', '1epoch_weights'),
               window_size = 10, input_size=(224,224)) :
     if key == 'FER' :
         # Model load
@@ -63,17 +64,17 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             print("The model weights has been load")
             print(weight_path)
 
+        return model
+
     elif key == 'FER_LSTM' :
         # Base model load
         base_model = ResNet34(cardinality=32, se='parallel_add')
 
         # load pre-trained weights of base model
-        base_weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add',
-                                   'checkpoint_4_300000-320739.ckpt')
-        assert len(glob.glob(base_weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
-        base_model.load_weights(base_weight_path)
-        print("The base model weights has been load")
-        print(base_weight_path)
+        assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
+        base_model.load_weights(weight_path)
+        print("The model weights has been load")
+        print(weight_path)
 
         base_model.build(input_shape=(None, input_size[0], input_size[1], 3))
         #############################
@@ -102,15 +103,17 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         model = Model(inputs=input_, outputs=fo)
 
         if preTrained:
-            assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
-            model.load_weights(weight_path)
+            assert len(glob.glob(weight_seq_path + '*')) > 1, 'There is no weight file | {}'.format(weight_seq_path)
+            model.load_weights(weight_seq_path)
             print("The model weights has been load")
-            print(weight_path)
+            print(weight_seq_path)
 
         for layer in model.layers :
             layer.trainable = False
         model.layers[-1].trainable = True
         model.layers[-2].trainable = True
+
+        return base_model, model
 
 
 
@@ -132,6 +135,8 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
 
         model = Model(inputs=base_model.input,
                                       outputs=output_)
+
+        return model
 
     elif key == 'resnet50_gru' :
         if preTrained :
@@ -164,6 +169,8 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
 
         model = Model(inputs=input_, outputs=fo)
 
+        return model
+
     elif key == 'vgg19_gru' :
         if preTrained :
             base_model = VGG19(include_top=False,
@@ -194,7 +201,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
 
         model = Model(inputs=input_, outputs=fo)
 
-    return model
+        return model
 
 # @tf.function
 def load_image(filename, image_size):

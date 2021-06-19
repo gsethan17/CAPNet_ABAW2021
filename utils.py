@@ -264,13 +264,14 @@ def reshape(img, image_size) :
 
 def load_td_image(images, image_size) :
     print(images)
+    print(os.path.isfile(images[0]))
+    print(os.path.isfile(images[1]))
+    print(os.path.isfile(images[2]))
     img1 = cv2.imread(images[0])
     img2 = cv2.imread(images[1])
     img3 = cv2.imread(images[2])
 
-    print(os.path.isfile(img1))
-    print(os.path.isfile(img2))
-    print(os.path.isfile(img3))
+
 
     img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)

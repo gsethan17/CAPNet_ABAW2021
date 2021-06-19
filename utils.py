@@ -263,22 +263,26 @@ def reshape(img, image_size) :
     return img
 
 def load_td_image(images, image_size) :
-    img1 = cv2.imread(images[0])
-    img2 = cv2.imread(images[1])
-    img3 = cv2.imread(images[2])
+    try :
+        img1 = cv2.imread(images[0])
+        img2 = cv2.imread(images[1])
+        img3 = cv2.imread(images[2])
 
-    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-    img3_gray = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)
+        img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+        img3_gray = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)
 
-    _, diff1 = ssim(img1_gray, img2_gray, full=True)
-    _, diff2 = ssim(img1_gray, img3_gray, full=True)
+        _, diff1 = ssim(img1_gray, img2_gray, full=True)
+        _, diff2 = ssim(img1_gray, img3_gray, full=True)
 
-    base = reshape(img1_gray, image_size)
-    diff1 = reshape(diff1*-1, image_size)
-    diff2 = reshape(diff2*-1, image_size)
+        base = reshape(img1_gray, image_size)
+        diff1 = reshape(diff1*-1, image_size)
+        diff2 = reshape(diff2*-1, image_size)
 
-    image_x = tf.concat([base, diff1, diff2], axis = 0)
+        image_x = tf.concat([base, diff1, diff2], axis = 0)
+
+    except :
+        print(images)
 
     return image_x
 

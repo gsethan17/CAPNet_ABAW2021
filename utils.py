@@ -256,7 +256,7 @@ def load_image(filename, image_size):
     return image
 
 def reshape(img, image_size) :
-    img = tf.image.resize(img, [image_size[0], image_size[1]])
+    img = cv2.resize(img, (image_size[0], image_size[1]))
     img = img / 255.0
     img = tf.expand_dims(img, axis=-1)
 

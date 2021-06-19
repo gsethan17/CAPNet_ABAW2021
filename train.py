@@ -1,4 +1,4 @@
-from utils import get_model, loss_ccc, metric_CCC, read_csv, read_pickle, Dataloader
+from utils import get_model, loss_ccc, metric_CCC, read_csv, read_pickle, Dataloader, Dataloader_td
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 import pandas as pd
@@ -41,9 +41,9 @@ config.read('./config.ini')
 PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
-IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
-TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_list.pickle')
-VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')
+IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped_aligned')
+TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_seq_topfull_list.pickle')
+VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_seq_topfull_list.pickle')
 
 ## input setting
 INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
@@ -131,11 +131,11 @@ def main() :
 
     print("Build the data loader")
     st_build = time.time()
-    train_dataloader = Dataloader(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    train_dataloader = Dataloader_td(x=train_data['x'], y=train_data['y'], image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
     ed_train = time.time()
     print("Train data has been build ({:.1f}seconds).".format(ed_train - st_build))
 
-    val_dataloader = Dataloader(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    val_dataloader = Dataloader_td(x=val_data['x'], y=val_data['y'], image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
     ed_val = time.time()
     print("Validation data has been build ({:.1f}seconds).".format(ed_val - ed_train))
 

@@ -16,6 +16,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import LSTM, GRU, Dense, ConvLSTM2D, BatchNormalization
 from tensorflow.keras.applications import ResNet50, VGG19
+import cv2
+from skimage.metrics import structural_similarity as ssim
 
 
 # PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
@@ -253,8 +255,66 @@ def load_image(filename, image_size):
         image = tf.zeros([image_size[0], image_size[1], 3])
     return image
 
+def reshape(img, image_size) :
+    img = tf.image.resize(img, [image_size[0], image_size[1]])
+    img = img / 255.0
+    img = tf.expand_dims(img, axis=0)
+
+    return img
+
+def load_td_image(images, image_size) :
+    img1 = cv2.imread(images[0])
+    img2 = cv2.imread(images[1])
+    img3 = cv2.imread(images[2])
+
+    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+    img3_gray = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)
+
+    _, diff1 = ssim(img1_gray, img2_gray, full=True)
+    _, diff2 = ssim(img1_gray, img3_gray, full=True)
+
+    base = reshape(img1_gray, image_size)
+    diff1 = reshape(diff1, image_size)
+    diff2 = reshape(diff2, image_size)
+
+    image_x = tf.concat([base, diff1, diff2], axis = 0)
+
+    return image_x
 
 # Dataloader
+class Dataloader_td(Sequence):
+    def __init__(self, x, y, image_path, image_size, batch_size=1, shuffle=False):
+        self.x, self.y, = x, y
+        self.image_path = image_path
+        self.image_size = image_size
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.on_epoch_end()
+
+    def __len__(self):
+        return int(np.ceil(len(self.x)) / float(self.batch_size))
+
+    def on_epoch_end(self):
+        self.indices = np.arange(len(self.x))
+
+        if self.shuffle == True:
+            np.random.shuffle(self.indices)
+
+    def __getitem__(self, idx):
+        indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
+
+        batch_x = [self.x[i] for i in indices]
+        images = []
+        for file_list in batch_x:
+            image_x = load_td_image([os.path.join(self.image_path, file_list[(k*-1)]) for k in range(1, 6, 2)], self.image_size)
+            images.append(image_x)
+
+        batch_y = [self.y[i] for i in indices]
+
+        return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
+
+
 class Dataloader(Sequence) :
     def __init__(self, x, y, image_path, image_size, batch_size=1, shuffle=False):
         self.x, self.y = x, y

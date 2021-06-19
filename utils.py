@@ -267,11 +267,13 @@ def load_td_image(images, image_size) :
     img1 = cv2.imread(images[0])
     img2 = cv2.imread(images[1])
     img3 = cv2.imread(images[2])
-    try:
-        img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-        img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-        img3_gray = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)
 
+    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+    img3_gray = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)
+
+
+    try:
         _, diff1 = ssim(img1_gray, img2_gray, full=True)
         _, diff2 = ssim(img1_gray, img3_gray, full=True)
 
@@ -282,9 +284,9 @@ def load_td_image(images, image_size) :
         image_x = tf.concat([base, diff1, diff2], axis = -1)
 
     except :
-        print(img1.shape)
-        print(img2.shape)
-        print(img3.shape)
+        print(img1_gray.shape)
+        print(img2_gray.shape)
+        print(img3_gray.shape)
 
     return image_x
 

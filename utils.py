@@ -126,9 +126,10 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         base_model.load_weights(weight_path)
         print("The model weights has been load")
         print(weight_path)
-
+        
         model = Sequential()
         model.add(Input(shape=(10, 224, 224, 3)))
+        '''
         model.add(ConvLSTM2D(filters=20, kernel_size=(3, 3),
                              padding='same', return_sequences=True))
         model.add(BatchNormalization())
@@ -138,6 +139,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         model.add(ConvLSTM2D(filters=40, kernel_size=(3, 3),
                              padding='same', return_sequences=True))
         model.add(BatchNormalization())
+        '''
         model.add(ConvLSTM2D(filters=3, kernel_size=(3, 3),
                              padding='same', return_sequences=False))
         model.add(BatchNormalization())
@@ -148,6 +150,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             model.load_weights(weight_seq_path)
             print("The model weights has been load")
             print(weight_seq_path)
+        print(model.summary())
 
         return base_model, model
 

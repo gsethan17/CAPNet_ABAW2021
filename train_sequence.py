@@ -7,7 +7,7 @@ import argparse
 import configparser
 import pandas as pd
 
-
+'''
 ################### Limit GPU Memory ###################
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print("########################################")
@@ -24,7 +24,7 @@ if gpus :
 else :
     print('GPU is not available')
 ##########################################################
-
+'''
 
 # Basic configuration
 parser = argparse.ArgumentParser()

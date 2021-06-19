@@ -308,14 +308,15 @@ class Dataloader_td(Sequence):
     def __getitem__(self, idx):
         indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
 
-        batch_x = [self.x[i] for i in indices]
+        # batch_x = [self.x[i] for i in indices]
         batch_y = []
         images = []
-        for file_list in batch_x:
-            flag, image_x = load_td_image([os.path.join(self.image_path, file_list[(k*-1)]) for k in range(1, 6, 2)], self.image_size)
-            if flag :
-                images.append(image_x)
-                batch_y.append(self.y[i])
+        for i in indices :
+            for file_list in self.x[i]:
+                flag, image_x = load_td_image([os.path.join(self.image_path, file_list[(k*-1)]) for k in range(1, 6, 2)], self.image_size)
+                if flag :
+                    images.append(image_x)
+                    batch_y.append(self.y[i])
 
         return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
 

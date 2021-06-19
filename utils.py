@@ -270,6 +270,7 @@ def load_td_image(images, image_size) :
     img1 = cv2.imread(images[0])
     img2 = cv2.imread(images[1])
     img3 = cv2.imread(images[2])
+    print(img2.shape)
 
 
 

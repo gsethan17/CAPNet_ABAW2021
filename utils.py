@@ -255,37 +255,38 @@ def load_image(filename, image_size):
         image = tf.zeros([image_size[0], image_size[1], 3])
     return image
 
-def reshape(img, image_size) :
+def loadNresize(img_path, image_size) :
+    img = cv2.imread(img_path)
     img = cv2.resize(img, (image_size[0], image_size[1]))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    return img
+
+def normalize(img) :
     img = img / 255.0
     img = tf.expand_dims(img, axis=-1)
-
     return img
 
 def load_td_image(images, image_size) :
     if os.path.isfile(images[0]) * os.path.isfile(images[1]) * os.path.isfile(images[2]) :
-        img1 = cv2.imread(images[0])
-        img2 = cv2.imread(images[1])
-        img3 = cv2.imread(images[2])
+        img1 = loadNresize(images[0])
+        img2 = loadNresize(images[1])
+        img3 = loadNresize(images[2])
 
-        img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-        img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-        img3_gray = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)
+        _, diff1 = ssim(img1, img2, full=True)
+        _, diff2 = ssim(img1, img3, full=True)
 
-        _, diff1 = ssim(img1_gray, img2_gray, full=True)
-        _, diff2 = ssim(img1_gray, img3_gray, full=True)
-
-        base = reshape(img1_gray, image_size)
-        diff1 = reshape(diff1*-1, image_size)
-        diff2 = reshape(diff2*-1, image_size)
+        base = normalize(img1)
+        diff1 = normalize(diff1*-1)
+        diff2 = normalize(diff2*-1)
 
         image_x = tf.concat([base, diff1, diff2], axis = -1)
 
-        return True, image_x
+        return image_x
 
     else :
         print(images)
-        return False, False
+        return -1
 
 # Dataloader
 class Dataloader_td(Sequence):
@@ -313,10 +314,9 @@ class Dataloader_td(Sequence):
         batch_y = []
         images = []
         for i in indices :
-            flag, image_x = load_td_image([os.path.join(self.image_path, self.x[i][(k*-1)]) for k in range(1, 6, 2)], self.image_size)
-            if flag :
-                images.append(image_x)
-                batch_y.append(self.y[i])
+            image_x = load_td_image([os.path.join(self.image_path, self.x[i][(k*-1)]) for k in range(1, 6, 2)], self.image_size)
+            images.append(image_x)
+            batch_y.append(self.y[i])
 
         return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
 

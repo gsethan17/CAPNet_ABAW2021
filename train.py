@@ -41,7 +41,7 @@ config.read('./config.ini')
 PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
-IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped_aligned')
+IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_seq_topfull_list.pickle')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_seq_topfull_list.pickle')
 
@@ -157,7 +157,7 @@ def main() :
         print("{:>5} / {:>5} || {:.4f}".format(e + 1, BATCH_SIZE*100, sum(eval_result)/len(eval_result)), end='\r')
     print("Pre-evaluation result : ", sum(eval_result)/len(eval_result))
     val_dataloader.on_epoch_end()
-    
+    '''
     ## use gradient tape
     results = {}
     results['train_loss'] = []
@@ -242,7 +242,7 @@ def main() :
 
         df = pd.DataFrame(results)
         df.to_csv(os.path.join(SAVE_PATH, 'Results.csv'), index=False)
-    '''
+
 
 if __name__ == "__main__" :
     main()

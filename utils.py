@@ -284,6 +284,9 @@ def load_td_image(images, image_size) :
 
         except :
             print(images)
+            print(os.path.isfile(images[0]))
+            print(os.path.isfile(images[1]))
+            print(os.path.isfile(images[2]))
 
         return True, image_x
 

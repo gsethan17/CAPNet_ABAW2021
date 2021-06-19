@@ -268,6 +268,10 @@ def load_td_image(images, image_size) :
         img2 = cv2.imread(images[1])
         img3 = cv2.imread(images[2])
 
+        print(os.path.isfile(img1))
+        print(os.path.isfile(img2))
+        print(os.path.isfile(img3))
+
         img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
         img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
         img3_gray = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)

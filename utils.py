@@ -269,9 +269,9 @@ def normalize(img) :
 
 def load_td_image(images, image_size) :
     if os.path.isfile(images[0]) * os.path.isfile(images[1]) * os.path.isfile(images[2]) :
-        img1 = loadNresize(images[0])
-        img2 = loadNresize(images[1])
-        img3 = loadNresize(images[2])
+        img1 = loadNresize(images[0], image_size)
+        img2 = loadNresize(images[1], image_size)
+        img3 = loadNresize(images[2], image_size)
 
         _, diff1 = ssim(img1, img2, full=True)
         _, diff2 = ssim(img1, img3, full=True)

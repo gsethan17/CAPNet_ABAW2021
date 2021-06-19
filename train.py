@@ -139,11 +139,6 @@ def main() :
     ed_val = time.time()
     print("Validation data has been build ({:.1f}seconds).".format(ed_val - ed_train))
 
-    for i in range(len(train_dataloader)) :
-        print(train_dataloader[i][0].shape, train_dataloader[i][1].shape, end='\r')
-    print('')
-    for i in range(len(val_dataloader)) :
-        print(val_dataloader[i][0].shape, val_dataloader[i][1].shape, end='\r')
     '''
     # pre-evaluation
     print("Pre-evaluation Start...")

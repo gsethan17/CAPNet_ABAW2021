@@ -139,7 +139,12 @@ def main() :
     ed_val = time.time()
     print("Validation data has been build ({:.1f}seconds).".format(ed_val - ed_train))
 
-
+    for i in range(len(train_dataloader)) :
+        print(train_dataloader[i][0].shape, train_dataloader[i][1].shape, end='\r')
+    print('')
+    for i in range(len(val_dataloader)) :
+        print(val_dataloader[i][0].shape, val_dataloader[i][1].shape, end='\r')
+    '''
     # pre-evaluation
     print("Pre-evaluation Start...")
     eval_result = []
@@ -152,7 +157,7 @@ def main() :
         print("{:>5} / {:>5} || {:.4f}".format(e + 1, BATCH_SIZE*100, sum(eval_result)/len(eval_result)), end='\r')
     print("Pre-evaluation result : ", sum(eval_result)/len(eval_result))
     val_dataloader.on_epoch_end()
-
+    
     ## use gradient tape
     results = {}
     results['train_loss'] = []
@@ -237,7 +242,7 @@ def main() :
 
         df = pd.DataFrame(results)
         df.to_csv(os.path.join(SAVE_PATH, 'Results.csv'), index=False)
-
+    '''
 
 if __name__ == "__main__" :
     main()

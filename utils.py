@@ -275,8 +275,8 @@ def load_td_image(images, image_size) :
     _, diff2 = ssim(img1_gray, img3_gray, full=True)
 
     base = reshape(img1_gray, image_size)
-    diff1 = reshape(diff1, image_size)
-    diff2 = reshape(diff2, image_size)
+    diff1 = reshape(diff1*-1, image_size)
+    diff2 = reshape(diff2*-1, image_size)
 
     image_x = tf.concat([base, diff1, diff2], axis = 0)
 

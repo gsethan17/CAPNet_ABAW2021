@@ -284,6 +284,7 @@ def load_td_image(images, image_size) :
         return True, image_x
 
     else :
+        print(images)
         return False, False
 
 # Dataloader

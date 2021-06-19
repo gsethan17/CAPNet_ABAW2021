@@ -263,7 +263,7 @@ def reshape(img, image_size) :
     return img
 
 def load_td_image(images, image_size) :
-    try :
+    if os.path.isfile(images[0]) * os.path.isfile(images[0]) * os.path.isfile(images[0]) :
         img1 = cv2.imread(images[0])
         img2 = cv2.imread(images[1])
         img3 = cv2.imread(images[2])
@@ -281,13 +281,10 @@ def load_td_image(images, image_size) :
 
         image_x = tf.concat([base, diff1, diff2], axis = -1)
 
-    except :
-        print(images)
-        print(os.path.isfile(images[0]))
-        print(os.path.isfile(images[1]))
-        print(os.path.isfile(images[2]))
+        return True, image_x
 
-    return image_x
+    else :
+        return False, _
 
 # Dataloader
 class Dataloader_td(Sequence):
@@ -312,12 +309,13 @@ class Dataloader_td(Sequence):
         indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
 
         batch_x = [self.x[i] for i in indices]
+        batch_y = []
         images = []
         for file_list in batch_x:
-            image_x = load_td_image([os.path.join(self.image_path, file_list[(k*-1)]) for k in range(1, 6, 2)], self.image_size)
-            images.append(image_x)
-
-        batch_y = [self.y[i] for i in indices]
+            flag, image_x = load_td_image([os.path.join(self.image_path, file_list[(k*-1)]) for k in range(1, 6, 2)], self.image_size)
+            if flag :
+                images.append(image_x)
+                batch_y.append(self.y[i])
 
         return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
 

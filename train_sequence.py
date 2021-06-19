@@ -42,8 +42,8 @@ PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
-TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_seq_list.pickle')
-VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_seq_list.pickle')
+TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_seq_topfull_list.pickle')
+VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_seq_topfull_list.pickle')
 
 ## input setting
 INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
@@ -52,7 +52,7 @@ INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IM
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
 ### Model load to global variable
-MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE)
+_, MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE)
 
 ## train setting
 EPOCHS = int(config['TRAIN']['EPOCHS'])

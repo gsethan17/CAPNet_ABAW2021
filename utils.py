@@ -11,8 +11,10 @@ import time
 from base_model.ResNet import ResNet34
 from tensorflow.keras.utils import Sequence
 from tensorflow.keras.losses import Loss
+from tensorflow.keras import Input
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import LSTM, GRU, Dense
+from tensorflow.keras.layers import LSTM, GRU, Dense, ConvLSTM2D, BatchNormalization
 from tensorflow.keras.applications import ResNet50, VGG19
 
 
@@ -115,7 +117,39 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
 
         return base_model, model
 
+    elif key == 'FER_ConvLSTM' :
+        # Base model load
+        base_model = ResNet34(cardinality=32, se='parallel_add')
 
+        # load pre-trained weights of base model
+        assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
+        base_model.load_weights(weight_path)
+        print("The model weights has been load")
+        print(weight_path)
+
+        model = Sequential()
+        model.add(Input(shape=(10, 224, 224, 3)))
+        model.add(ConvLSTM2D(filters=20, kernel_size=(3, 3),
+                             padding='same', return_sequences=True))
+        model.add(BatchNormalization())
+        model.add(ConvLSTM2D(filters=30, kernel_size=(3, 3),
+                             padding='same', return_sequences=True))
+        model.add(BatchNormalization())
+        model.add(ConvLSTM2D(filters=40, kernel_size=(3, 3),
+                             padding='same', return_sequences=True))
+        model.add(BatchNormalization())
+        model.add(ConvLSTM2D(filters=3, kernel_size=(3, 3),
+                             padding='same', return_sequences=False))
+        model.add(BatchNormalization())
+        model.add(base_model)
+
+        if preTrained:
+            assert len(glob.glob(weight_seq_path + '*')) > 1, 'There is no weight file | {}'.format(weight_seq_path)
+            model.load_weights(weight_seq_path)
+            print("The model weights has been load")
+            print(weight_seq_path)
+
+        return base_model, model
 
     elif key == 'resnet50' :
         if preTrained :

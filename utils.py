@@ -273,10 +273,12 @@ def load_td_image(images, image_size) :
     img3_gray = cv2.cvtColor(img3, cv2.COLOR_BGR2GRAY)
 
 
-    try:
-        _, diff1 = ssim(img1_gray, img2_gray, full=True)
-        _, diff2 = ssim(img1_gray, img3_gray, full=True)
 
+    _, diff1 = ssim(img1_gray, img2_gray, full=True)
+    _, diff2 = ssim(img1_gray, img3_gray, full=True)
+
+
+    try:
         base = reshape(img1_gray, image_size)
         diff1 = reshape(diff1*-1, image_size)
         diff2 = reshape(diff2*-1, image_size)
@@ -285,8 +287,8 @@ def load_td_image(images, image_size) :
 
     except :
         print(img1_gray.shape)
-        print(img2_gray.shape)
-        print(img3_gray.shape)
+        print(diff1.shape)
+        print(diff2.shape)
 
     return image_x
 

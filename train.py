@@ -7,7 +7,7 @@ import time
 import argparse
 import configparser
 
-
+'''
 ################### Limit GPU Memory ###################
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print("########################################")
@@ -24,7 +24,7 @@ if gpus :
 else :
     print('GPU is not available')
 ##########################################################
-
+'''
 
 # Basic configuration
 parser = argparse.ArgumentParser()
@@ -51,19 +51,21 @@ INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IM
 ## model setting
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
-### Model load to global variable
-MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE)
 
 ## train setting
 EPOCHS = int(config['TRAIN']['EPOCHS'])
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
 SHUFFLE = config['TRAIN'].getboolean('SHUFFLE')
-# LEARNING_RATE_DECAY = config['TRAIN'].getboolean('LR_DECAY')
 LEARNING_RATE = float(config['TRAIN']['LEARNING_RATE'])
-# DECAY_CONSTANT = float(config['TRAIN']['DECAY_CONSTANT'])
+DROPOUT_RATE = float(config['TRAIN']['DROPOUT_RATE'])
 OPTIMIZER = Adam(learning_rate=LEARNING_RATE)
 LOSS = loss_ccc
 METRIC = metric_CCC
+
+### Model load to global variable
+MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
+                  weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE,
+                  dropout_rate=DROPOUT_RATE)
 
 ## start time setting
 tm = time.localtime(time.time())
@@ -82,7 +84,7 @@ if not os.path.isdir(SAVE_PATH):
 
 # write general setting
 f = open(os.path.join(SAVE_PATH, "setting.txt"), "w")
-setting = "Train model : {}.\nBatch size : {}.\nLearning rate : {}\n".format(MODEL_KEY, BATCH_SIZE, LEARNING_RATE)
+setting = "Train model : {}.\nBatch size : {}.\nLearning rate : {}\nDropout : {}\n".format(MODEL_KEY, BATCH_SIZE, LEARNING_RATE, DROPOUT_RATE)
 f.write(setting)
 # if LEARNING_RATE_DECAY :
 #     setting = "Learning rate decay constant : {}\n".format(DECAY_CONSTANT)

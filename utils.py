@@ -54,7 +54,8 @@ def read_csv(path) :
 # Model Load Function
 def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt'),
               weight_seq_path=os.path.join(os.getcwd(), 'results', '618_0_42_FER_LSTM', '1epoch_weights'),
-              window_size = 10, input_size=(224,224)) :
+              window_size = 10, input_size=(224,224),
+              dropout_rate = 0.2) :
     if key == 'FER' :
         # Model load
         model = ResNet34(cardinality = 32, se = 'parallel_add')
@@ -101,10 +102,12 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
                 out_3 = tf.expand_dims(out_, axis = 1)
                 output_ = tf.concat([output_, out_3], axis = 1)
 
-        lstm = LSTM(256, input_shape=(window_size, 512))(output_)
-        fo = Dense(2, activation = 'tanh')(lstm)
+        lstm = LSTM(256, input_shape=(window_size, 512), dropout=dropout_rate)(output_)
+        do1 = Dropout(rate=dropout_rate)(lstm)
+        fo1 = Dense(256, activation = 'tanh')(do1)
+        fo2 = Dense(2, activation='tanh')(fo1)
 
-        model = Model(inputs=input_, outputs=fo)
+        model = Model(inputs=input_, outputs=fo2)
 
         if preTrained:
             assert len(glob.glob(weight_seq_path + '*')) > 1, 'There is no weight file | {}'.format(weight_seq_path)

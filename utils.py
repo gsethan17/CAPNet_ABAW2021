@@ -14,7 +14,7 @@ from tensorflow.keras.losses import Loss
 from tensorflow.keras import Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import LSTM, GRU, Dense, ConvLSTM2D, BatchNormalization
+from tensorflow.keras.layers import LSTM, GRU, Dense, ConvLSTM2D, BatchNormalization, Dropout
 from tensorflow.keras.applications import ResNet50, VGG19
 import cv2
 from skimage.metrics import structural_similarity as ssim

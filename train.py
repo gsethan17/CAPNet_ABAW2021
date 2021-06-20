@@ -14,7 +14,7 @@ print("########################################")
 print('{} GPU(s) is(are) available'.format(len(gpus)))
 print("########################################")
 # set the only one GPU and memory limit
-memory_limit = 1024*9
+memory_limit = 1024*6
 if gpus :
     try :
         tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit = memory_limit)])

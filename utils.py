@@ -1,16 +1,12 @@
 import os
 from glob import glob
-import random
 import csv
 import pickle
 import numpy as np
 import tensorflow as tf
-import copy
 import glob
-import time
 from base_model.ResNet import ResNet34
 from tensorflow.keras.utils import Sequence
-from tensorflow.keras.losses import Loss
 from tensorflow.keras import Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import Model
@@ -19,13 +15,6 @@ from tensorflow.keras.applications import ResNet50, VGG19
 import cv2
 from skimage.metrics import structural_similarity as ssim
 
-
-# PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
-# PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
-# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
-# PATH_DATA = os.path.join(os.getcwd(), 'data')
-
-# INPUT_IMAGE_SIZE = (224, 224)
 
 def read_pickle(path) :
     with open(path, 'rb') as f:
@@ -381,246 +370,6 @@ class Dataloader_sequential(Sequence) :
 
         return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
 
-'''
-class CCC(Loss) :
-    def __init__(self, name="ccc"):
-        super().__init__(name=name)
-
-    def CCC_score(self, x, y):
-        
-        vx = x - np.mean(x)
-        vy = y - np.mean(y)
-        rho = np.sum(vx * vy) / (np.sqrt(np.sum(vx ** 2)) * np.sqrt(np.sum(vy ** 2)))
-        x_m = np.mean(x)
-        y_m = np.mean(y)
-        x_s = np.std(x)
-        y_s = np.std(y)
-        ccc = 2 * rho * x_s * y_s / (x_s ** 2 + y_s ** 2 + (x_m - y_m) ** 2)
-        
-        # Concordance Correlation Coefficient
-        # sxy = np.sum((x - np.mean(x)) * (y - np.mean(y))) / x.shape[0]
-        # ccc = 2 * sxy / (np.var(x) + np.var(y) + (np.mean(x) - np.mean(y)) ** 2)
-        x_mean = tf.math.reduce_mean(x)
-        y_mean = tf.math.reduce_mean(y)
-        x_var = tf.math.reduce_variance(x)
-        y_var = tf.math.reduce_variance(y)
-
-        sxy = tf.math.reduce_mean((x - x_mean) * (y - y_mean))
-
-        ccc = (2 * sxy) / (x_var + y_var + tf.math.pow(x_mean-y_mean, 2))
-
-        return ccc
-
-    def call(self, y_pred, y_true):
-        items = [self.CCC_score(y_pred[:, 0], y_true[:, 0]), self.CCC_score(y_pred[:, 1], y_true[:, 1])]
-        total_ccc = tf.math.reduce_mean(items)
-        return total_ccc, items
-
-
-# Dataset
-class Dataset_generator() :
-    def __init__(self, path, batch_size = 1, random_split = False):
-        self.path = path
-        self.list_subjects = sorted([x.rstrip('.csv') for x in os.listdir(path) if x.endswith('.csv')])
-        self.total_samples = self.get_samples()
-        self.list_trains, self.list_vals = self.split(random_split=random_split)
-        self.num_subjects = len(self.list_subjects)
-        self.batch_size = batch_size
-
-    def count(self, dic):
-        count = 0
-        count_na = 0
-
-        for k in dic :
-            count += len(dic[k])
-            count_na += dic[k].count("")        
-
-        return count-count_na
-
-
-    def get_count(self) :
-        return self.count(self.list_trains), self.count(self.list_vals)
-
-    def reset(self):
-        self.list_trains, self.list_vals = self.split()
-
-    def split_samples(self, subject_list):
-        dic = {}
-        for subject in subject_list :
-            if subject in self.total_samples.keys() :
-                dic[subject] = copy.deepcopy(self.total_samples[subject])
-        return dic
-
-    def split(self, random_split):
-
-        if not random_split :
-            list_trains = read_csv(os.path.join(PATH_DATA, 'va_train_set.csv'))
-            list_vals = read_csv(os.path.join(PATH_DATA, 'va_val_set.csv'))
-
-            dic_trains = self.split_samples(list_trains)
-            dic_vals = self.split_samples(list_vals)
-
-            return dic_trains, dic_vals
-
-        else :
-            list_total = self.list_subjects
-            random.shuffle(list_total)
-            idx = int(len(list_total) * 0.2)
-            list_vals = list_total[:idx]
-            list_trains = list_total[idx:]
-
-            dic_trains = self.split_samples(list_trains)
-            dic_vals = self.split_samples(list_vals)
-
-            return dic_trains, dic_vals
-
-
-    def get_samples(self):
-        samples = {}
-
-        for i, name in enumerate(self.list_subjects) :
-
-            file_path = os.path.join(self.path, name + '.csv')
-
-            samples[name] = read_csv(file_path)
-
-        return samples
-
-
-    def get_trainData(self):
-        candi_subject_name = []
-        candi_img_name = []
-
-        while len(candi_img_name) < self.batch_size :
-
-            candi_subject = random.choice(list(self.list_trains.keys()))
-            candi_inputs = self.list_trains[candi_subject]
-            while "" in candi_inputs :
-                candi_inputs.remove("")
-
-            if len(candi_inputs) > 0 :
-                candi = random.choice(candi_inputs)
-                candi_idx = self.list_trains[candi_subject].index(candi)
-
-                candi_subject_name.append(candi_subject)
-                candi_img_name.append(self.list_trains[candi_subject].pop(candi_idx))
-
-            else :
-                del self.list_trains[candi_subject]
-                continue
-
-        print(candi_subject_name, candi_img_name)
-        # get inputs
-        inputs = self.get_inputs(candi_subject_name, candi_img_name)
-
-        # ger labels
-        labels = self.get_labels(candi_subject_name, candi_img_name)
-
-        return inputs, labels
-
-    def get_valData(self):
-        candi_subject_name = []
-        candi_img_name = []
-
-        while len(candi_img_name) < self.batch_size :
-
-            candi_subject = random.choice(list(self.list_vals.keys()))
-            candi_inputs = self.list_vals[candi_subject]
-            while "" in candi_inputs :
-                candi_inputs.remove("")
-
-            if len(candi_inputs) > 0 :
-                candi = random.choice(candi_inputs)
-                candi_idx = self.list_vals[candi_subject].index(candi)
-
-                candi_subject_name.append(candi_subject)
-                candi_img_name.append(self.list_vals[candi_subject].pop(candi_idx))
-
-            else :
-                del self.list_vals[candi_subject]
-                continue
-
-        # get inputs
-        inputs = self.get_inputs(candi_subject_name, candi_img_name)
-
-        # ger labels
-        labels = self.get_labels(candi_subject_name, candi_img_name)
-
-        return inputs, labels
-
-    @tf.function
-    def load_image(self, filename):
-        raw = tf.io.read_file(filename)
-        image = tf.image.decode_jpeg(raw, channels=3)
-        image = tf.image.resize(image, [INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1]])
-        image = image / 255.0
-        return image
-
-    def get_inputs(self, list_subject_name, list_img_name):
-        # assert len(list_video_name) == len(list_img_name), 'There is as error in get_trainData function.'
-        # inputs = tf.zeros((self.batch_size, INPUT_IMAGE_SIZE[0], INPUT_IMAGE_SIZE[1], 3))
-
-        switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
-        switch_subjects = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
-
-        for i in range(self.batch_size) :
-            subject_name = list_subject_name[i]
-            img_name = list_img_name[i]
-
-            ###############################
-            if subject_name in switch_images.keys() :
-                if img_name in switch_images[subject_name] :
-                    alti_subject_name = switch_subjects[subject_name]
-                    image_path = os.path.join(PATH_DATA, 'images', 'cropped', alti_subject_name, img_name)
-                else :
-                    image_path = os.path.join(PATH_DATA, 'images', 'cropped', subject_name, img_name)
-
-
-            else :
-                image_path = os.path.join(PATH_DATA, 'images', 'cropped', subject_name, img_name)
-            ###############################
-
-#            try :
-            image = self.load_image(image_path)
-#            except:
-#                continue
-
-            image = tf.expand_dims(image, axis = 0)
-
-#            if i == 0 :
-#                inputs = image
-            try :
-                inputs = tf.concat([inputs, image], axis = 0)
-            except:
-                inputs = image
-
-        return inputs
-
-
-    def get_labels(self, list_subject_name, list_img_name):
-        # labels = tf.zeros((self.batch_size, 2))
-
-        for i in range(self.batch_size) :
-            subject_name = list_subject_name[i]
-            img_name = list_img_name[i]
-
-            idx = self.total_samples[subject_name].index(img_name)
-
-            path = os.path.join(PATH_DATA, 'annotations', 'VA_Set', '**', subject_name + '.txt')
-            path = glob.glob(path)[0]
-            list_labels = read_txt(path)
-            label = tf.cast([float(x) for x in list_labels[(idx+1)]], tf.float32)
-
-            label = tf.expand_dims(label, axis = 0)
-
-            if i == 0 :
-                labels = label
-            else :
-                labels = tf.concat([labels, label], axis = 0)
-
-        return labels
-'''
-
 def CCC_score_np(x, y):
     x_mean = np.mean(x)
     y_mean = np.mean(y)
@@ -656,43 +405,63 @@ def metric_CCC(x, y):
     # total_ccc = tf.math.reduce_mean(items)
     return cccs
 
+# Fill in the blank
+def fib(path) :
+    file_list = os.listdir(path)
+
+    save_path = os.path.join(path, 'fib')
+
+    if not os.path.isdir(save_path):
+        os.makedirs(save_path)
+
+    for file in file_list :
+        txt_list = read_txt(os.path.join(path, file))
+        save_file_path = os.path.join(save_path, file)
+
+        flag = False
+
+        for i, txt in enumerate(txt_list) :
+            if i > 0 :
+                line = [float(x) for x in txt]
+                v = line[0]
+                a = line[1]
+
+                if v == -5 or a == -5 :
+                    if not flag :
+                        content = "{},{}\n".format(v, a)
+                        f.write(content)
+                    else :
+                        content = "{},{}\n".format(v_pre, a_pre)
+                        f.write(content)
+                else :
+                    content = "{},{}\n".format(v, a)
+                    f.write(content)
+
+                    v_pre = v
+                    a_pre = a
+
+                    flag = True
+
+            else :
+                f = open(save_file_path, "w")
+                content = "valence,arousal\n"
+                f.write(content)
+
+        f.close()
+
+
+
+
+
 
 
 if __name__ == '__main__' :
+    import argparse
 
-    dg = Dataset_generator(PATH_DATA_GUIDE, batch_size=128, random_split=True)
-    num_tarin, num_val = dg.get_count()
-    print(num_val)
-    
-    for i in range(num_val // 128) :
-        input_, label_ = dg.get_valData()
-#        print(input_.shape, label_.shape)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path', default='/home/gsethan/Desktop/ABAW2021/results/evaluation/614_13_15_FER/raw/',
+                        help='Enter the path which has desired files')
 
-        _, num_val = dg.get_count()
-        print(num_val)
+    args = parser.parse_args()
 
-#    ccc_v = CCC_score(label_[:,0], label__[:,0])
-#    ccc_a = CCC_score(label_[:,1], label__[:,1])
-  
-#    print(ccc_v)
-#    print(ccc_a)
-
-#    items, mean_items = metric_CCC(label_, label__)
-#    print(items)
-#    print(mean_items)
-    # sample_list = dg.total_samples['5-60-1920x1080-3']
-    # for i, image in enumerate(sample_list) :
-    #     if image == "" :
-    #         print(i)
-
-
-
-
-    # model = get_model()
-    # model.build(input_shape = (None, 244, 244, 3))
-    # print(model.summary())
-    #
-    # input_ = np.ones((1, 224, 224, 3))
-    # output_ = model.predict(input_)
-    # print(output_.shape)
-    # print(output_)
+    fib(args.path)

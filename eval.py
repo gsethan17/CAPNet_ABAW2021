@@ -7,7 +7,7 @@ import time
 import cv2
 import glob
 import numpy as np
-'''
+
 ################### Limit GPU Memory ###################
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print("########################################")
@@ -25,7 +25,7 @@ if gpus:
 else:
     print('GPU is not available')
 ##########################################################
-'''
+
 # Basic configuration
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',
@@ -35,7 +35,7 @@ parser.add_argument('--mode', default='show',
 
 args = parser.parse_args()
 
-args.location
+# args.location
 
 config = configparser.ConfigParser()
 config.read('./config.ini')
@@ -56,7 +56,9 @@ INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IM
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
 ### Model load to global variable
-BASE_MODEL, MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, weight_seq_path=PATH_SEQ_WEIGHT, input_size = INPUT_IMAGE_SIZE)
+# BASE_MODEL, MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, weight_seq_path=PATH_SEQ_WEIGHT, input_size = INPUT_IMAGE_SIZE)
+MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, weight_seq_path=PATH_SEQ_WEIGHT, input_size = INPUT_IMAGE_SIZE)
+
 
 ## evaluation setting
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
@@ -326,12 +328,16 @@ def write_txt(type='val') :
         return -1
 
     # Save Path setting
-    weights_tag = PATH_WEIGHT.split('/')[-2]
+    if args.location == 'GSLOCAL' :
+        weights_tag = PATH_WEIGHT.split('\\')[-2]
+    else :
+        weights_tag = PATH_WEIGHT.split('/')[-2]
     # tm = time.localtime(time.time())
     SAVE_PATH = os.path.join(os.getcwd(),
                              'results',
                              'evaluation',
-                             weights_tag)
+                             weights_tag,
+                             'raw')
 
     if not os.path.isdir(SAVE_PATH):
         os.makedirs(SAVE_PATH)
@@ -340,13 +346,7 @@ def write_txt(type='val') :
     switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
     switch_subjects = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
 
-    # write weights information
-    # f = open(os.path.join(SAVE_PATH, "Weight.txt"), "w")
-    # content = "Used weights : {}\n".format(PATH_WEIGHT)
-    # f.write(content)
-    # f.close()
-
-    video_list = read_csv(file_path)
+    # video_list = read_csv(file_path)
     
     video_list = ['5-60-1920x1080-3',
                   '5-60-1920x1080-4',
@@ -360,7 +360,7 @@ def write_txt(type='val') :
     
     # print(video_list)
     for v, video_name in enumerate(video_list) :
-        flag = False
+        # flag = False
 
         # write weights information
         save_file_path = os.path.join(SAVE_PATH, video_name+".txt")
@@ -401,7 +401,7 @@ def write_txt(type='val') :
                 image_name = images_list[i]
 
                 if image_name == '' :
-                    if not flag :
+                    if count == 0 :
                         valence = -5
                         arousal = -5
 
@@ -409,37 +409,28 @@ def write_txt(type='val') :
                         f.write(content)
 
                     else :
-                        if count == 0 :
-                            valence = prev_val
-                            arousal = prev_aro
+                        predicts = MODEL(xs)
+
+                        for i in range(len(predicts)):
+                            valence = predicts[i][0]
+                            arousal = predicts[i][1]
 
                             content = "{},{}\n".format(valence, arousal)
                             f.write(content)
 
-                        else :
-                            predicts = MODEL(xs)
+                        valence = -5
+                        arousal = -5
 
-                            for i in range(len(predicts)):
-                                valence = predicts[i][0]
-                                arousal = predicts[i][1]
+                        content = "{},{}\n".format(valence, arousal)
+                        f.write(content)
 
-                                content = "{},{}\n".format(valence, arousal)
-                                f.write(content)
-
-                            content = "{},{}\n".format(valence, arousal)
-                            f.write(content)
-
-                            count = 0
-                            prev_val = valence
-                            prev_aro = arousal
+                        count = 0
 
                 else :
                     object = switching(video_name, image_name, switch_images, switch_subjects)
                     image_path = os.path.join(IMAGE_PATH, object, image_name)
                     x = load_image(image_path, INPUT_IMAGE_SIZE)
                     x = tf.expand_dims(x, axis = 0)
-
-                    flag = True
 
                     if count == 0 :
                         xs = x
@@ -460,8 +451,8 @@ def write_txt(type='val') :
                                 f.write(content)
 
                             count = 0
-                            prev_val = valence
-                            prev_aro = arousal
+                            # prev_val = valence
+                            # prev_aro = arousal
 
                         else :
                             continue
@@ -477,8 +468,6 @@ def write_txt(type='val') :
                             f.write(content)
 
                         count = 0
-                        prev_val = valence
-                        prev_aro = arousal
 
             f.close()
 

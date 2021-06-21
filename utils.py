@@ -453,13 +453,13 @@ def compare(path) :
     prediction_path = os.path.join(path, '*.txt')
     prediction_lists = glob.glob(prediction_path)
     # prediction_lists.pop(prediction_lists.index('Weight.txt'))
-    print(prediction_lists)
 
     total_ccc_V = []
     total_ccc_A = []
 
     for i, prediction_list in enumerate(prediction_lists) :
-        predictions = read_txt(os.path.join(prediction_path, prediction_list))
+        name = os.path.basename(prediction_list)
+        predictions = read_txt(prediction_list)
 
         pred = []
         for i in range(len(predictions)-1) :
@@ -470,7 +470,7 @@ def compare(path) :
         predictions_V = pred[:, :1]
         predictions_A = pred[:, 1:]
 
-        gts = read_txt(os.path.join(PATH_DATA, 'annotations', 'VA_Set', 'Validation_Set', prediction_list))
+        gts = read_txt(os.path.join(PATH_DATA, 'annotations', 'VA_Set', 'Validation_Set', name))
 
         gt = []
         for j in range(len(gts)-1) :
@@ -486,7 +486,7 @@ def compare(path) :
         total_ccc_V.append(valence_ccc_score)
         total_ccc_A.append(arousal_ccc_score)
 
-        print("{} : {:.4f}, {:.4f}".format(prediction_list, valence_ccc_score, arousal_ccc_score))
+        print("{} : {:.4f}, {:.4f}".format(os.path.basename(prediction_list), valence_ccc_score, arousal_ccc_score))
 
     ccc_V = sum(total_ccc_V) / len(total_ccc_V)
     ccc_A = sum(total_ccc_A) / len(total_ccc_A)

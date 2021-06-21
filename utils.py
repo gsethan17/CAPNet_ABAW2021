@@ -450,8 +450,8 @@ def fib(path) :
         f.close()
 
 def compare(path) :
-    prediction_path = path
-    prediction_lists = os.listdir(prediction_path)
+    prediction_path = os.path.join(path, '*.txt')
+    prediction_lists = glob.glob(prediction_path)
     # prediction_lists.pop(prediction_lists.index('Weight.txt'))
     print(prediction_lists)
 

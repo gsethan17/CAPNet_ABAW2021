@@ -500,6 +500,7 @@ def compare(path) :
 
 if __name__ == '__main__' :
     import argparse
+    import configparser
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', default='/home/gsethan/Desktop/ABAW2021/results/evaluation/614_13_15_FER/raw/',
@@ -507,8 +508,15 @@ if __name__ == '__main__' :
 
     parser.add_argument('--mode', default='compare',
                         help='Enter the desired mode')
+    parser.add_argument('--location', default='205',
+                        help='Enter the server environment to be trained on')
 
     args = parser.parse_args()
+
+    config = configparser.ConfigParser()
+    config.read('./config.ini')
+
+    PATH_DATA = config[args.location]['PATH_DATA']
 
     if args.mode == 'compare' :
         compare(args.path)

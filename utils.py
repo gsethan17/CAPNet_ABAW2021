@@ -42,7 +42,6 @@ def read_csv(path) :
 
 # Model Load Function
 def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt'),
-              weight_seq_path=os.path.join(os.getcwd(), 'results', '618_0_42_FER_LSTM', '1epoch_weights'),
               window_size = 10, input_size=(224,224),
               dropout_rate = 0.2) :
     if key == 'FER' :
@@ -58,17 +57,17 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             print("The model weights has been load")
             print(weight_path)
 
-        return model
 
     elif key == 'FER_LSTM' :
         # Base model load
         base_model = ResNet34(cardinality=32, se='parallel_add')
 
         # load pre-trained weights of base model
-        assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
-        base_model.load_weights(weight_path)
-        print("The model weights has been load")
-        print(weight_path)
+        base_weights = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt')
+        assert len(glob.glob(base_weights + '*')) > 1, 'There is no weight file | {}'.format(base_weights)
+        base_model.load_weights(base_weights)
+        # print("The model weights has been load")
+        # print(weight_path)
 
         base_model.build(input_shape=(None, input_size[0], input_size[1], 3))
         #############################
@@ -99,27 +98,28 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         model = Model(inputs=input_, outputs=fo2)
 
         if preTrained:
-            assert len(glob.glob(weight_seq_path + '*')) > 1, 'There is no weight file | {}'.format(weight_seq_path)
-            model.load_weights(weight_seq_path)
+            assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
+            model.load_weights(weight_path)
             print("The model weights has been load")
-            print(weight_seq_path)
+            print(weight_path)
 
         for layer in model.layers :
             layer.trainable = False
         model.layers[-1].trainable = True
         model.layers[-2].trainable = True
 
-        return base_model, model
 
     elif key == 'FER_ConvLSTM' :
         # Base model load
         base_model = ResNet34(cardinality=32, se='parallel_add')
 
         # load pre-trained weights of base model
-        assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
-        base_model.load_weights(weight_path)
-        print("The model weights has been load")
-        print(weight_path)
+        base_weights = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add',
+                                    'checkpoint_4_300000-320739.ckpt')
+        assert len(glob.glob(base_weights + '*')) > 1, 'There is no weight file | {}'.format(base_weights)
+        base_model.load_weights(base_weights)
+        # print("The model weights has been load")
+        # print(base_weights)
         
         model = Sequential()
         model.add(Input(shape=(10, 224, 224, 3)))
@@ -140,99 +140,99 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         model.add(base_model)
 
         if preTrained:
-            assert len(glob.glob(weight_seq_path + '*')) > 1, 'There is no weight file | {}'.format(weight_seq_path)
-            model.load_weights(weight_seq_path)
+            assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
+            model.load_weights(weight_path)
             print("The model weights has been load")
-            print(weight_seq_path)
+            print(weight_path)
         print(model.summary())
 
-        return base_model, model
+    return model
 
-    elif key == 'resnet50' :
-        if preTrained :
-            base_model = ResNet50(include_top=False,
-                                  weights='imagenet',
-                                  input_shape=(input_size[0], input_size[1], 3), pooling='avg')
-        else :
-            base_model = ResNet50(include_top=False,
-                                                    weights=None,
-                                                    input_shape=(input_size[0], input_size[1], 3),
-                                                    pooling='avg')
-
-        x = base_model.output
-        x = Dense(1024, activation='relu')(x)
-        x = Dense(500, activation='relu')(x)
-        output_ = Dense(2, activation='tanh')(x)
-
-        model = Model(inputs=base_model.input,
-                                      outputs=output_)
-
-        return model
-
-    elif key == 'resnet50_gru' :
-        if preTrained :
-            base_model = ResNet50(include_top=False,
-                                                    weights='imagenet',
-                                                    input_shape=(input_size[0], input_size[1], 3),
-                                                    pooling='avg')
-        else :
-            base_model = ResNet50(include_top=False,
-                                                    weights=None,
-                                                    input_shape=(input_size[0], input_size[1], 3),
-                                                    pooling='avg')
-
-        input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
-        for i in range(window_size):
-            feature = base_model(input_[:, i, :, :, :])
-
-            if i == 0:
-                out_0 = tf.expand_dims(feature, axis=1)
-            elif i == 1:
-                out_1 = tf.expand_dims(feature, axis=1)
-                output_ = tf.concat([out_0, out_1], axis=1)
-            else:
-                out_3 = tf.expand_dims(feature, axis=1)
-                output_ = tf.concat([output_, out_3], axis=1)
-
-        gru1 = GRU(1024, return_sequences=True)(output_)
-        gru2 = GRU(512)(gru1)
-        fo = Dense(2, activation='tanh')(gru2)
-
-        model = Model(inputs=input_, outputs=fo)
-
-        return model
-
-    elif key == 'vgg19_gru' :
-        if preTrained :
-            base_model = VGG19(include_top=False,
-                                                    weights='imagenet',
-                                                    input_shape=(input_size[0], input_size[1], 3),
-                                                    pooling='avg')
-        else :
-            base_model = VGG19(include_top=False,
-                                                    weights=None,
-                                                    input_shape=(input_size[0], input_size[1], 3),
-                                                    pooling='avg')
-
-        input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
-        for i in range(window_size):
-            feature = base_model(input_[:, i, :, :, :])
-
-            if i == 0:
-                out_0 = tf.expand_dims(feature, axis=1)
-            elif i == 1:
-                out_1 = tf.expand_dims(feature, axis=1)
-                output_ = tf.concat([out_0, out_1], axis=1)
-            else:
-                out_3 = tf.expand_dims(feature, axis=1)
-                output_ = tf.concat([output_, out_3], axis=1)
-
-        gru = GRU(256)(output_)
-        fo = Dense(2, activation='tanh')(gru)
-
-        model = Model(inputs=input_, outputs=fo)
-
-        return model
+    # elif key == 'resnet50' :
+    #     if preTrained :
+    #         base_model = ResNet50(include_top=False,
+    #                               weights='imagenet',
+    #                               input_shape=(input_size[0], input_size[1], 3), pooling='avg')
+    #     else :
+    #         base_model = ResNet50(include_top=False,
+    #                                                 weights=None,
+    #                                                 input_shape=(input_size[0], input_size[1], 3),
+    #                                                 pooling='avg')
+    #
+    #     x = base_model.output
+    #     x = Dense(1024, activation='relu')(x)
+    #     x = Dense(500, activation='relu')(x)
+    #     output_ = Dense(2, activation='tanh')(x)
+    #
+    #     model = Model(inputs=base_model.input,
+    #                                   outputs=output_)
+    #
+    #     return model
+    #
+    # elif key == 'resnet50_gru' :
+    #     if preTrained :
+    #         base_model = ResNet50(include_top=False,
+    #                                                 weights='imagenet',
+    #                                                 input_shape=(input_size[0], input_size[1], 3),
+    #                                                 pooling='avg')
+    #     else :
+    #         base_model = ResNet50(include_top=False,
+    #                                                 weights=None,
+    #                                                 input_shape=(input_size[0], input_size[1], 3),
+    #                                                 pooling='avg')
+    #
+    #     input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
+    #     for i in range(window_size):
+    #         feature = base_model(input_[:, i, :, :, :])
+    #
+    #         if i == 0:
+    #             out_0 = tf.expand_dims(feature, axis=1)
+    #         elif i == 1:
+    #             out_1 = tf.expand_dims(feature, axis=1)
+    #             output_ = tf.concat([out_0, out_1], axis=1)
+    #         else:
+    #             out_3 = tf.expand_dims(feature, axis=1)
+    #             output_ = tf.concat([output_, out_3], axis=1)
+    #
+    #     gru1 = GRU(1024, return_sequences=True)(output_)
+    #     gru2 = GRU(512)(gru1)
+    #     fo = Dense(2, activation='tanh')(gru2)
+    #
+    #     model = Model(inputs=input_, outputs=fo)
+    #
+    #     return model
+    #
+    # elif key == 'vgg19_gru' :
+    #     if preTrained :
+    #         base_model = VGG19(include_top=False,
+    #                                                 weights='imagenet',
+    #                                                 input_shape=(input_size[0], input_size[1], 3),
+    #                                                 pooling='avg')
+    #     else :
+    #         base_model = VGG19(include_top=False,
+    #                                                 weights=None,
+    #                                                 input_shape=(input_size[0], input_size[1], 3),
+    #                                                 pooling='avg')
+    #
+    #     input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
+    #     for i in range(window_size):
+    #         feature = base_model(input_[:, i, :, :, :])
+    #
+    #         if i == 0:
+    #             out_0 = tf.expand_dims(feature, axis=1)
+    #         elif i == 1:
+    #             out_1 = tf.expand_dims(feature, axis=1)
+    #             output_ = tf.concat([out_0, out_1], axis=1)
+    #         else:
+    #             out_3 = tf.expand_dims(feature, axis=1)
+    #             output_ = tf.concat([output_, out_3], axis=1)
+    #
+    #     gru = GRU(256)(output_)
+    #     fo = Dense(2, activation='tanh')(gru)
+    #
+    #     model = Model(inputs=input_, outputs=fo)
+    #
+    #     return model
 
 # @tf.function
 def load_image(filename, image_size):

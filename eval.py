@@ -45,7 +45,7 @@ PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_SWITCH_INFO = config[args.location]['PATH_SWITCH_INFO']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
-PATH_SEQ_WEIGHT = config[args.location]['PATH_SEQ_WEIGHT']
+# PATH_SEQ_WEIGHT = config[args.location]['PATH_SEQ_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')
 
@@ -56,8 +56,7 @@ INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IM
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
 ### Model load to global variable
-# BASE_MODEL, MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, weight_seq_path=PATH_SEQ_WEIGHT, input_size = INPUT_IMAGE_SIZE)
-MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, weight_seq_path=PATH_SEQ_WEIGHT, input_size = INPUT_IMAGE_SIZE)
+MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE)
 
 
 ## evaluation setting
@@ -137,28 +136,29 @@ def write_sequence(type='val') :
         return -1
 
     # Save Path setting
-    weights_tag = PATH_SEQ_WEIGHT.split('/')[-2]
+    weights_tag = PATH_WEIGHT.split('/')[-2]
     # tm = time.localtime(time.time())
     SAVE_PATH = os.path.join(os.getcwd(),
                              'results',
                              'evaluation',
-                             weights_tag)
+                             weights_tag,
+                             'raw')
 
     if not os.path.isdir(SAVE_PATH):
         os.makedirs(SAVE_PATH)
 
     # load dataset
-    data_path = os.path.join(PATH_DATA, 'va_{}_seq_list.pickle'.format(type))
+    data_path = os.path.join(PATH_DATA, 'va_{}_seq_topfull_list.pickle'.format(type))
     data = read_pickle(data_path)
 
     # load switching info
-    switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
-    switch_subjects = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
+    # switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
+    # switch_subjects = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
 
     video_list = read_csv(file_path)
 
     for v, video_name in enumerate(video_list):
-        flag = False
+        # flag = False
 
         # write weights information
         save_file_path = os.path.join(SAVE_PATH, video_name + ".txt")
@@ -176,13 +176,11 @@ def write_sequence(type='val') :
 
             if "_" in video_name:
                 if video_name.split('_')[-1] == 'right' or video_name.split('_')[-1] == 'left':
-                    video_rep = '_'.join(video_name.split('_')[:-1])
+                    video_pos = os.path.join(PATH_DATA, 'videos', '_'.join(video_name.split('_')[:-1]) + '.*')
                 else:
-                    video_rep = video_name
+                    video_pos = os.path.join(PATH_DATA, 'videos', video_name + '.*')
             else:
-                video_rep = video_name
-
-            video_pos = os.path.join(PATH_DATA, 'videos', video_rep + '.*')
+                video_pos = os.path.join(PATH_DATA, 'videos', video_name + '.*')
 
             if not len(glob.glob(video_pos)) == 1:
                 print("Video path is not vaild : {}".format(video_name))
@@ -193,12 +191,22 @@ def write_sequence(type='val') :
             # count total number of frame
             capture = cv2.VideoCapture(video_path)
             total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+            # idx_list = []
+            # for l in range(len(data['i'])) :
+            #     if data['i'][l][0] == video_name :
+            #         idx_list.append(data['i'][l])
 
-            images_list = read_csv(os.path.join(PATH_DATA_GUIDE, video_name + '.csv'))
             count = 0
             for i in range(int(total_len)):
                 print("{:>5} / {:>5} || {:>5} / {:>5}".format(v + 1, len(video_list), i, int(total_len)), end='\r')
                 print((video_name, i), end='')
+
+                # for d in range(len(idx_list)) :
+                #     if idx_list[d][1] == i :
+                #         idx = data['i'].index(idx_list[d])
+                #         break
+                #     else :
+                #         idx = -1
 
                 try :
                     idx = data['i'].index([video_name, i])
@@ -207,78 +215,34 @@ def write_sequence(type='val') :
 
                 if idx == -1 :
 
-                    image_name = images_list[i]
-
-                    if image_name == '':
-
-                        if not flag:
-                            valence = -5
-                            arousal = -5
-
-                            content = "{},{}\n".format(valence, arousal)
-                            f.write(content)
-
-    
-                        else:
-                            if count == 0:
-                                valence = prev_val
-                                arousal = prev_aro
-
-                                content = "{},{}\n".format(valence, arousal)
-                                f.write(content)
-
-                            else:
-                                predicts = MODEL(xs)
-
-                                for i in range(len(predicts)):
-                                    valence = predicts[i][0]
-                                    arousal = predicts[i][1]
-
-                                    content = "{},{}\n".format(valence, arousal)
-                                    f.write(content)
-
-                                content = "{},{}\n".format(valence, arousal)
-                                f.write(content)
-
-                                count = 0
-                                prev_val = valence
-                                prev_aro = arousal
-
-                    else :
-                        if count != 0 :
-                            predicts = MODEL(xs)
-
-                            for i in range(len(predicts)):
-                                valence = predicts[i][0]
-                                arousal = predicts[i][1]
-
-                                content = "{},{}\n".format(valence, arousal)
-                                f.write(content)
-                            count = 0
-
-                        object = switching(video_name, image_name, switch_images, switch_subjects)
-                        image_path = os.path.join(IMAGE_PATH, object, image_name)
-                        x = load_image(image_path, INPUT_IMAGE_SIZE)
-                        x = tf.expand_dims(x, axis=0)
-                        print(x.shape)
-                        predicts = BASE_MODEL(x)
-                        print(predicts.shape)
-                        valence = predicts[0][0]
-                        arousal = predicts[0][1]
+                    if count == 0 :
+                        valence = -5
+                        arousal = -5
 
                         content = "{},{}\n".format(valence, arousal)
                         f.write(content)
 
-                        prev_val = valence
-                        prev_aro = arousal
+                    else :
+                        predicts = MODEL(xs)
 
-                        flag = True
+                        for i in range(len(predicts)):
+                            valence = predicts[i][0]
+                            arousal = predicts[i][1]
+
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+
+                        valence = -5
+                        arousal = -5
+
+                        content = "{},{}\n".format(valence, arousal)
+                        f.write(content)
+
+                        count = 0
 
                 else:
                     x = [load_image(os.path.join(IMAGE_PATH, file_name), INPUT_IMAGE_SIZE) for file_name in data['x'][idx]]
                     x = tf.expand_dims(x, axis=0)
-
-                    flag = True
 
                     if count == 0:
                         xs = x
@@ -299,8 +263,6 @@ def write_sequence(type='val') :
                                 f.write(content)
 
                             count = 0
-                            prev_val = valence
-                            prev_aro = arousal
 
                         else:
                             continue
@@ -316,8 +278,6 @@ def write_sequence(type='val') :
                             f.write(content)
 
                         count = 0
-                        prev_val = valence
-                        prev_aro = arousal
 
             f.close()
 

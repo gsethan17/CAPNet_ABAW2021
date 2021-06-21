@@ -346,8 +346,8 @@ def write_txt(type='val') :
     switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
     switch_subjects = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_subjects.pickle'))
 
-    # video_list = read_csv(file_path)
-    
+    video_list = read_csv(file_path)
+    '''
     video_list = ['5-60-1920x1080-3',
                   '5-60-1920x1080-4',
                   '8-30-1280x720',
@@ -357,7 +357,7 @@ def write_txt(type='val') :
                   '16-30-1920x1080',
                   '24-30-1920x1080-1',
                   '24-30-1920x1080-2']
-    
+    '''
     # print(video_list)
     for v, video_name in enumerate(video_list) :
         # flag = False

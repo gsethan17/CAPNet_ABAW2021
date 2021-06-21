@@ -453,6 +453,7 @@ def compare(path) :
     prediction_path = path
     prediction_lists = os.listdir(prediction_path)
     # prediction_lists.pop(prediction_lists.index('Weight.txt'))
+    print(prediction_lists)
 
     total_ccc_V = []
     total_ccc_A = []

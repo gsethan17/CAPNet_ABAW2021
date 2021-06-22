@@ -523,8 +523,8 @@ def merge(path1, path2) :
             cur = [float(x) for x in prediction1[(i + 1)]]
             ref = [float(x) for x in prediction2[(i + 1)]]
 
-            if cur[0] == -5 or cur[1] == -5 :
-                if ref[0] == -5 or ref[1] == -5 :
+            if cur[0] == -5 :
+                if ref[0] == -5 :
                     content = "{},{}\n".format(cur[0], cur[1])
                     f.write(content)
                 else :

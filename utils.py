@@ -116,10 +116,10 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             print("The model weights has been load")
             print(weight_path)
 
-        for layer in model.layers :
-            layer.trainable = False
-        model.layers[-1].trainable = True
-        model.layers[-2].trainable = True
+        # for layer in model.layers :
+        #     layer.trainable = False
+        # model.layers[-1].trainable = True
+        # model.layers[-2].trainable = True
 
 
     elif key == 'FER_ConvLSTM' :

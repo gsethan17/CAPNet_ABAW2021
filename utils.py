@@ -536,7 +536,7 @@ def merge(path1, path2) :
                     content = "{},{}\n".format(cur[0], cur[1])
                     f.write(content)
             else :
-                print("cur not -5)
+                print("cur not -5")
                 content = "{},{}\n".format(cur[0], cur[1])
                 f.write(content)
             break

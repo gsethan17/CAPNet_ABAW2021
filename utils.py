@@ -90,7 +90,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
                 out_3 = tf.expand_dims(out_, axis = 1)
                 output_ = tf.concat([output_, out_3], axis = 1)
         # new
-        # '''
+        '''
         lstm = LSTM(256, input_shape=(window_size, 512), dropout=dropout_rate)(output_)
         
         do1 = Dropout(rate=dropout_rate)(lstm)
@@ -98,16 +98,16 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         fo2 = Dense(2, activation='tanh')(fo1)
         
         model = Model(inputs=input_, outputs=fo2)
-        # '''
+        '''
         # new
 
         # old
-        '''
+        # '''
         lstm = LSTM(256, input_shape = (window_size, 512))(output_)
         fo = Dense(2, activation='tanh')(lstm)
 
         model = Model(inputs=input_, outputs=fo)
-        '''
+        # '''
         # old
 
         if preTrained:

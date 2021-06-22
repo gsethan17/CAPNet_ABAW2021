@@ -65,7 +65,7 @@ METRIC = metric_CCC
 ### Model load to global variable
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
                   weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE,
-                  dropout_rate=DROPOUT_RATE)[1]
+                  dropout_rate=DROPOUT_RATE)
 
 ## start time setting
 tm = time.localtime(time.time())

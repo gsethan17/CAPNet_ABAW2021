@@ -105,7 +105,7 @@ def train_step(X, Y) :
     global OPTIMIZER
 
     with tf.GradientTape() as tape :
-        predictions = MODEL(X)
+        predictions = MODEL(X, training=True)
         loss = LOSS(predictions, Y)
         metric = METRIC(predictions, Y)
 

@@ -9,7 +9,7 @@ MODEL = get_model(key='FER_LSTM', preTrained=True,
 
 input_ = tf.ones((1, 10, 224, 224, 3))
 
-output_ = MODEL(input_)
+output_ = MODEL(input_, trainable=True)
 output_pred = MODEL.predict(input_)
 
 print(output_)

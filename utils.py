@@ -527,7 +527,7 @@ def merge(path1, path2) :
             print(ref)
 
             if cur[0] == -5 or cur[1] == -5 :
-                if not ref[0] == -5 or ref[1] == -5 :
+                if not ref[0] == -5 and ref[1] == -5 :
                     print("cur -5, ref not -5")
                     content = "{},{}\n".format(ref[0], ref[1])
                     f.write(content)

@@ -407,6 +407,8 @@ def metric_CCC(x, y):
 
 # Fill in the blank
 def fib(path) :
+    # file_list = os.path.join(path, '*.txt')
+    # file_list = glob.glob(file_list)
     file_list = os.listdir(path)
 
     save_path = os.path.join(path, 'fib')
@@ -498,14 +500,49 @@ def compare(path) :
     print("The CCC value of arousal is {:.4f}".format(ccc_A))
     print("Total CCC value is {:.4f}".format(ccc_M))
 
+def merge(path1, path2) :
+    file_list1 = os.path.join(path1, '*.txt')
+    file_lists1 = glob.glob(file_list1)
+
+    save_path = os.path.join(path1, 'merge')
+
+    if not os.path.isdir(save_path):
+        os.makedirs(save_path)
+
+    for i, prediction_list in enumerate(file_lists1) :
+        name = os.path.basename(prediction_list)
+        prediction1 = read_txt(prediction_list)
+        prediction2 = read_txt(os.path.join(path2, name))
+
+        save_file_path = os.path.join(save_path, name)
+        f = open(save_file_path, "w")
+        content = "valence,arousal\n"
+        f.write(content)
+
+        for j in range(len(prediction1) - 1):
+            cur = [float(x) for x in prediction1[(i + 1)]]
+            ref = [float(x) for x in prediction2[(i + 1)]]
+
+            if cur[0] == -5 or cur[1] == -5 :
+                if not ref[0] == -5 or ref[1] == -5 :
+                    content = "{},{}\n".format(ref[0], ref[1])
+                    f.write(content)
+                else :
+                    content = "{},{}\n".format(cur[0], cur[1])
+                    f.write(content)
+            else :
+                content = "{},{}\n".format(cur[0], cur[1])
+                f.write(content)
+
+        f.close()
 
 if __name__ == '__main__' :
     import argparse
     import configparser
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', default='/home/gsethan/Desktop/ABAW2021/results/evaluation/614_13_15_FER/raw/',
-                        help='Enter the path which has desired files')
+    parser.add_argument('--path1', help='Enter the path which has desired files')
+    parser.add_argument('--path2', help='Enter the path which has desired files')
 
     parser.add_argument('--mode', default='compare',
                         help='Enter the desired mode')
@@ -520,6 +557,8 @@ if __name__ == '__main__' :
     PATH_DATA = config[args.location]['PATH_DATA']
 
     if args.mode == 'compare' :
-        compare(args.path)
+        compare(args.path1)
     elif args.mode == 'fib' :
-        fib(args.path)
+        fib(args.path1)
+    elif args.mode == 'merge' :
+        merge(args.path1, args.path2)

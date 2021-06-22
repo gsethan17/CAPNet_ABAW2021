@@ -511,6 +511,7 @@ def merge(path1, path2) :
 
     for i, prediction_list in enumerate(file_lists1) :
         name = os.path.basename(prediction_list)
+        print(name)
         prediction1 = read_txt(prediction_list)
         prediction2 = read_txt(os.path.join(path2, name))
 
@@ -522,19 +523,26 @@ def merge(path1, path2) :
         for j in range(len(prediction1) - 1):
             cur = [float(x) for x in prediction1[(i + 1)]]
             ref = [float(x) for x in prediction2[(i + 1)]]
+            print(cur)
+            print(ref)
 
             if cur[0] == -5 or cur[1] == -5 :
                 if not ref[0] == -5 or ref[1] == -5 :
+                    print("cur -5, ref not -5")
                     content = "{},{}\n".format(ref[0], ref[1])
                     f.write(content)
                 else :
+                    print("cur -5, ref -5")
                     content = "{},{}\n".format(cur[0], cur[1])
                     f.write(content)
             else :
+                print("cur not -5)
                 content = "{},{}\n".format(cur[0], cur[1])
                 f.write(content)
+            break
 
         f.close()
+        break
 
 if __name__ == '__main__' :
     import argparse

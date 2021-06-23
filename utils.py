@@ -183,9 +183,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         model.add(MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
         model.add(convblock(256))
         model.add(GlobalAveragePooling2D())
-
-        model.add(Dropout(dropout_rate, activation='relu'))
-        model.add(Dense(128))
+        model.add(Dense(128, activation='relu'))
         model.add(Dense(2, activation='tanh'))
 
 

@@ -18,7 +18,7 @@ config.read('./config.ini')
 PATH_DATA = config[args.location]['PATH_DATA']
 
 PATH_VIDEO = os.path.join(PATH_DATA, 'videos')
-PATH_AUDIO = os.path.join(PATH_DATA, 'audios')
+PATH_AUDIO = os.path.join(os.getcwd(), 'audios')
 if not os.path.isdir(PATH_AUDIO) :
     os.makedirs(PATH_AUDIO)
 

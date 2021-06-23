@@ -450,9 +450,14 @@ class Dataloader_audio(Sequence) :
         return np.clip((S - self.min_level_db) / -self.min_level_db, 0, 1)
 
     def get_mel(self, name, i):
+        if name.split('_')[-1] == 'right' or name.split('_')[-1] == 'left':
+            name = '_'.join(name.split('_')[:-1])
+
+        path = os.path.join(self.audio_path, name + '.wav')
+
         p = int(self.sr * i / self.fps)
 
-        path = os.path.join(self.audio_path, name+'.wav')
+
         y, sr = librosa.load(path, sr=self.sr)
         S = librosa.feature.melspectrogram(y=y[p - int(self.window_size * self.sr):p],
                                            n_mels=self.n_mels,

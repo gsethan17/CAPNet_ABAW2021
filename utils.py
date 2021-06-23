@@ -416,10 +416,10 @@ class Dataloader_sequential(Sequence) :
 
 
 class Dataloader_audio(Sequence) :
-    def __init__(self, y, i, data_path, batch_size=1, shuffle=False,
+    def __init__(self, x, y, i, data_path, batch_size=1, shuffle=False,
                  fps=30, sr=44100, n_mels=128, n_fft=1024, win_length=882,
                  hop_length=441, window_size=3):
-        self.y, self.i = y, i
+        self.x, self.y, self.i = x, y, i
         self.audio_path = os.path.join(data_path, 'audios')
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -470,16 +470,18 @@ class Dataloader_audio(Sequence) :
     def __getitem__(self, idx):
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
 
-        batch_x = [self.i[i] for i in indices]
+        batch_x = [self.x[i] for i in indices]
+
+        batch_i = [self.i[i] for i in indices]
 
         mels = []
-        for file_list in batch_x :
+        for file_list in batch_i :
             mel_x = self.get_mel(file_list[0], file_list[1])
             mels.append(mel_x)
 
         batch_y = [self.y[i] for i in indices]
 
-        return tf.convert_to_tensor(mels), tf.convert_to_tensor(batch_y)
+        return batch_x, tf.convert_to_tensor(mels), tf.convert_to_tensor(batch_y)
 
 def CCC_score_np(x, y):
     x_mean = np.mean(x)

@@ -411,18 +411,12 @@ class Dataloader_sequential(Sequence) :
 
         return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
 
-
-
-
-
 class Dataloader_audio(Sequence) :
-    def __init__(self, x, y, i, data_path, batch_size=1, shuffle=False,
+    def __init__(self, x, i, data_path,
                  fps=30, sr=44100, n_mels=128, n_fft=1024, win_length=882,
                  hop_length=441, window_size=3):
-        self.x, self.y, self.i = x, y, i
+        self.x, self.i = x, i
         self.audio_path = os.path.join(data_path, 'audios')
-        self.batch_size = batch_size
-        self.shuffle = shuffle
 
         self.fps = fps
         self.sr = sr
@@ -436,13 +430,11 @@ class Dataloader_audio(Sequence) :
         self.on_epoch_end()
 
     def __len__(self):
-        return int(np.ceil(len(self.y)) / float(self.batch_size))
+        return len(self.x)
 
     def on_epoch_end(self):
-        self.indices = np.arange(len(self.y))
+        self.indices = np.arange(len(self.x))
 
-        if self.shuffle == True :
-            np.random.shuffle(self.indices)
 
     def normalize_mel(self, S):
         return np.clip((S - self.min_level_db) / -self.min_level_db, 0, 1)
@@ -464,24 +456,19 @@ class Dataloader_audio(Sequence) :
         db_S = librosa.power_to_db(S, ref=np.max)
         norm_log_S = self.normalize_mel(db_S)
 
-        x = tf.expand_dims(norm_log_S, axis = -1)
-        return x
+        # x = tf.expand_dims(norm_log_S, axis = -1)
+        return norm_log_S
 
     def __getitem__(self, idx):
-        indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
+        # indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
 
-        batch_x = [self.x[i] for i in indices]
+        batch_x = self.x[idx]
 
-        batch_i = [self.i[i] for i in indices]
+        batch_i = self.i[idx]
 
-        mels = []
-        for file_list in batch_i :
-            mel_x = self.get_mel(file_list[0], file_list[1])
-            mels.append(mel_x)
+        mel_x = self.get_mel(batch_i[0], batch_i[1])
 
-        batch_y = [self.y[i] for i in indices]
-
-        return batch_x, tf.convert_to_tensor(mels), tf.convert_to_tensor(batch_y)
+        return batch_x, mel_x
 
 def CCC_score_np(x, y):
     x_mean = np.mean(x)

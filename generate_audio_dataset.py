@@ -91,7 +91,10 @@ def get_mel_dataset() :
             print(data[1])
         if i == 10 :
             break
-    print(np.array(mels).shape)
+
+    train_data['m'] = mels
+    print(len(train_data['m']))
+    print(len(train_data['x']))
 
 
 if __name__ == "__main__" :

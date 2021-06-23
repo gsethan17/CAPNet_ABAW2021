@@ -1,8 +1,22 @@
 import moviepy.editor as mp
 import os
+import argparse
+import configparser
 
-# PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
-PATH_DATA = 'D:\\Git\\ABAW2021\\data\\'
+# Basic configuration
+parser = argparse.ArgumentParser()
+parser.add_argument('--location', default='205',
+                    help='Enter the server environment to be trained on')
+args = parser.parse_args()
+
+args.location
+
+config = configparser.ConfigParser()
+config.read('./config.ini')
+
+## path setting
+PATH_DATA = config[args.location]['PATH_DATA']
+
 PATH_VIDEO = os.path.join(PATH_DATA, 'videos')
 PATH_AUDIO = os.path.join(PATH_DATA, 'audios')
 if not os.path.isdir(PATH_AUDIO) :

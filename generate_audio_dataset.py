@@ -2,6 +2,7 @@ import moviepy.editor as mp
 import os
 import argparse
 import configparser
+from utils import read_pickle, Dataloader_audio
 
 # Basic configuration
 parser = argparse.ArgumentParser()
@@ -21,6 +22,18 @@ PATH_VIDEO = os.path.join(PATH_DATA, 'videos')
 PATH_AUDIO = os.path.join(PATH_DATA, 'audios')
 if not os.path.isdir(PATH_AUDIO) :
     os.makedirs(PATH_AUDIO)
+
+## input setting
+FPS = int(config['INPUT']['FPS'])
+INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
+WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
+
+SR = int(config['INPUT']['SR'])
+N_MELS = int(config['INPUT']['N_MELS'])
+N_FFT = int(config['INPUT']['N_FFT'])
+WIN_LENGTH = int(config['INPUT']['L_WIN'])
+HOP_LENGTH = int(config['INPUT']['L_HOP'])
+TIME_BINS = int(WINDOW_SIZE * 1000 / HOP_LENGTH) + 1
 
 def generate_audio_file() :
     global PATH_VIDEO
@@ -47,22 +60,39 @@ def generate_audio_file() :
 
     return error_list
 
+def get_mel_dataset() :
+    TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_latest.pickle')
+    VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
+
+    train_data = read_pickle(TRAIN_DATA_PATH)
+    val_data = read_pickle(VAL_DATA_PATH)
+
+    train_dataloader = Dataloader_audio(y=train_data['y'], i=train_data['i'],
+                                        data_path=PATH_DATA, batch_size=1, shuffle=False,
+                                        fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
+                                        win_length=int(SR * WIN_LENGTH / 1000),
+                                        hop_length=int(SR * HOP_LENGTH / 1000),
+                                        window_size=WINDOW_SIZE
+                                        )
+
+    val_dataloader = Dataloader_audio(y=val_data['y'], i=val_data['i'],
+                                      data_path=PATH_DATA, batch_size=1, shuffle=False,
+                                      fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
+                                      win_length=int(SR * WIN_LENGTH / 1000),
+                                      hop_length=int(SR * HOP_LENGTH / 1000),
+                                      window_size=WINDOW_SIZE
+                                      )
+
+    for i in range(len(train_dataloader)) :
+        print(train_dataloader[i])
+        if i == 10 :
+            break
+
 
 if __name__ == "__main__" :
-    error_list = generate_audio_file()
-    print(error_list)
+    # error_list = generate_audio_file()
+    # print(error_list)
 
-    '''
-    audiosource = os.path.join(PATH_VIDEO, '5-60-1920x1080-4.mp4')
-    videosource = os.path.join(PATH_VIDEO, '5-60-1920x1080-4_predict.mp4')
-    output = os.path.join(PATH_VIDEO, '5-60-1920x1080-4_predict_withsound.mp4')
+    get_mel_dataset()
 
-    videoclip = mp.VideoFileClip(videosource)
-    audioclip = mp.VideoFileClip(audiosource)
-    audioclip_get = audioclip.audio
-
-    videoclip.audio = audioclip_get
-
-    videoclip.write_videofile(output)
-    '''
 

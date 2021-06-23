@@ -26,6 +26,8 @@ def generate_audio_file() :
     global PATH_VIDEO
     global PATH_AUDIO
 
+    error_list = []
+
     for name_video in os.listdir(PATH_VIDEO) :
         PATH_SAVE_AUDIO = os.path.join(PATH_AUDIO, name_video.split('.')[0] + '.wav')
 
@@ -36,15 +38,19 @@ def generate_audio_file() :
                     videoclip.audio.write_audiofile(PATH_SAVE_AUDIO)
                 except :
                     print("{} has something wrong!!".format(name_video))
+                    error_list.append(name_video)
             else :
                 print("Video file for '{}' is not exist".format(name_video))
 
         else :
             print("Audio file for '{}' is already exist".format(name_video))
 
+    return error_list
+
 
 if __name__ == "__main__" :
-    generate_audio_file()
+    error_list = generate_audio_file()
+    print(error_list)
 
     '''
     audiosource = os.path.join(PATH_VIDEO, '5-60-1920x1080-4.mp4')

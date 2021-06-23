@@ -1,4 +1,4 @@
-from utils import get_model, loss_ccc, metric_CCC, read_csv, read_pickle, Dataloader, Dataloader_td, Dataloader_sequential
+from utils import get_model, loss_ccc, metric_CCC, read_csv, read_pickle, Dataloader, Dataloader_td, Dataloader_sequential, Dataloader_audio
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 import pandas as pd
@@ -46,7 +46,16 @@ TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_latest.pickle')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
 
 ## input setting
+FPS = int(config['INPUT']['FPS'])
 INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
+WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
+
+SR = int(config['INPUT']['SR'])
+N_MELS = int(config['INPUT']['N_MELS'])
+N_FFT = int(config['INPUT']['N_FFT'])
+WIN_LENGTH = int(config['INPUT']['L_WIN'])
+HOP_LENGTH = int(config['INPUT']['L_HOP'])
+TIME_BINS = int(WINDOW_SIZE * 1000 / HOP_LENGTH) + 1
 
 ## model setting
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
@@ -64,7 +73,9 @@ METRIC = metric_CCC
 
 ### Model load to global variable
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
-                  weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE,
+                  weight_path=PATH_WEIGHT,
+                  input_size = INPUT_IMAGE_SIZE,
+                  mel_size = (N_MELS, TIME_BINS),
                   dropout_rate=DROPOUT_RATE)
 
 ## start time setting
@@ -133,13 +144,27 @@ def main() :
 
     print("Build the data loader")
     st_build = time.time()
-    train_dataloader = Dataloader_sequential(x=train_data['x'], y=train_data['y'], i=train_data['i'],
-                                             image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    # train_dataloader = Dataloader_sequential(x=train_data['x'], y=train_data['y'], i=train_data['i'],
+    #                                          image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    train_dataloader = Dataloader_audio(y=train_data['y'], i=train_data['i'],
+                                        data_path = PATH_DATA, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
+                                        fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
+                                        win_length=int(SR*WIN_LENGTH/1000),
+                                        hop_length=int(SR*HOP_LENGTH/1000),
+                                        window_size=WINDOW_SIZE
+                                        )
     ed_train = time.time()
     print("Train data has been build ({:.1f}seconds).".format(ed_train - st_build))
 
-    val_dataloader = Dataloader_sequential(x=val_data['x'], y=val_data['y'], i=val_data['i'],
-                                           image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    # val_dataloader = Dataloader_sequential(x=val_data['x'], y=val_data['y'], i=val_data['i'],
+    #                                        image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    val_dataloader = Dataloader_audio(y=val_data['y'], i=val_data['i'],
+                                        data_path=PATH_DATA, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
+                                        fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
+                                        win_length=int(SR * WIN_LENGTH / 1000),
+                                        hop_length=int(SR * HOP_LENGTH / 1000),
+                                        window_size=WINDOW_SIZE
+                                        )
     ed_val = time.time()
     print("Validation data has been build ({:.1f}seconds).".format(ed_val - ed_train))
 

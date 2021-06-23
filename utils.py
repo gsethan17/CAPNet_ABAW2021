@@ -10,10 +10,11 @@ from tensorflow.keras.utils import Sequence
 from tensorflow.keras import Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import LSTM, GRU, Dense, ConvLSTM2D, BatchNormalization, Dropout
+from tensorflow.keras.layers import LSTM, GRU, Dense, Conv2D, ConvLSTM2D, BatchNormalization, Dropout, MaxPooling2D, GlobalAveragePooling2D, Activation
 from tensorflow.keras.applications import ResNet50, VGG19
 import cv2
 from skimage.metrics import structural_similarity as ssim
+import librosa
 
 
 def read_pickle(path) :
@@ -41,8 +42,20 @@ def read_csv(path) :
     return lines
 
 # Model Load Function
+
+def convblock(channels) :
+    model = Sequential()
+    model.add(Conv2D(channels, 3, padding='same'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    model.add(Conv2D(channels, 3, padding='same'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    return model
+
 def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt'),
               window_size = 10, input_size=(224,224),
+              mel_size = (128, 301),
               dropout_rate = 0.2) :
     if key == 'FER' :
         # Model load
@@ -158,6 +171,23 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             print("The model weights has been load")
             print(weight_path)
         print(model.summary())
+
+    elif key == 'AUDIO' :
+        model = Sequential()
+        model.add(Input(shape=(mel_size[0], mel_size[1], 1)))
+        model.add(convblock(32))
+        model.add(MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
+        model.add(convblock(64))
+        model.add(MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
+        model.add(convblock(128))
+        model.add(MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
+        model.add(convblock(256))
+        model.add(GlobalAveragePooling2D())
+
+        model.add(Dropout(dropout_rate))
+        model.add(Dense(128))
+        model.add(Dense(2))
+
 
     return model
 
@@ -382,6 +412,72 @@ class Dataloader_sequential(Sequence) :
         batch_y = [self.y[i] for i in indices]
 
         return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
+
+
+
+
+
+class Dataloader_audio(Sequence) :
+    def __init__(self, y, i, data_path, batch_size=1, shuffle=False,
+                 fps=30, sr=44100, n_mels=128, n_fft=1024, win_length=882,
+                 hop_length=441, window_size=3):
+        self.y, self.i = y, i
+        self.audio_path = os.path.join(data_path, 'audios')
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+
+        self.fps = fps
+        self.sr = sr
+        self.n_mels = n_mels
+        self.n_fft = n_fft
+        self.win_length =win_length
+        self.hop_length = hop_length
+        self.window_size = window_size
+        self.min_level_db = -100
+
+        self.on_epoch_end()
+
+    def __len__(self):
+        return int(np.ceil(len(self.y)) / float(self.batch_size))
+
+    def on_epoch_end(self):
+        self.indices = np.arange(len(self.y))
+
+        if self.shuffle == True :
+            np.random.shuffle(self.indices)
+
+    def normalize_mel(self, S):
+        return np.clip((S - self.min_level_db) / -self.min_level_db, 0, 1)
+
+    def get_mel(self, name, i):
+        p = int(self.sr * i / self.fps)
+
+        path = os.path.join(self.audio_path, name+'.wav')
+        y, sr = librosa.load(path, sr=self.sr)
+        S = librosa.feature.melspectrogram(y=y[p - int(self.window_size * self.sr):p],
+                                           n_mels=self.n_mels,
+                                           n_fft=self.n_fft,
+                                           win_length=self.win_length,
+                                           hop_length=self.hop_length)
+        db_S = librosa.power_to_db(S, ref=np.max)
+        norm_log_S = self.normalize_mel(db_S)
+
+        x = tf.expand_dims(norm_log_S, axis = -1)
+        return x
+
+    def __getitem__(self, idx):
+        indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
+
+        batch_x = [self.i[i] for i in indices]
+
+        mels = []
+        for file_list in batch_x :
+            mel_x = self.get_mel(file_list[0], file_list[1])
+            mels.append(mel_x)
+
+        batch_y = [self.y[i] for i in indices]
+
+        return tf.convert_to_tensor(mels), tf.convert_to_tensor(batch_y)
 
 def CCC_score_np(x, y):
     x_mean = np.mean(x)

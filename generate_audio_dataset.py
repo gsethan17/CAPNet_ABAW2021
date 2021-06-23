@@ -67,16 +67,16 @@ def get_mel_dataset() :
     train_data = read_pickle(TRAIN_DATA_PATH)
     val_data = read_pickle(VAL_DATA_PATH)
 
-    train_dataloader = Dataloader_audio(x=train_data['x'], y=train_data['y'], i=train_data['i'],
-                                        data_path=PATH_DATA, batch_size=1, shuffle=False,
+    train_dataloader = Dataloader_audio(x=train_data['x'], i=train_data['i'],
+                                        data_path=PATH_DATA,
                                         fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
                                         win_length=int(SR * WIN_LENGTH / 1000),
                                         hop_length=int(SR * HOP_LENGTH / 1000),
                                         window_size=WINDOW_SIZE
                                         )
 
-    val_dataloader = Dataloader_audio(x=val_data['x'], y=val_data['y'], i=val_data['i'],
-                                      data_path=PATH_DATA, batch_size=1, shuffle=False,
+    val_dataloader = Dataloader_audio(x=val_data['x'], i=val_data['i'],
+                                      data_path=PATH_DATA,
                                       fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
                                       win_length=int(SR * WIN_LENGTH / 1000),
                                       hop_length=int(SR * HOP_LENGTH / 1000),

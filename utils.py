@@ -455,8 +455,9 @@ class Dataloader_audio(Sequence) :
 
         p = int(self.sr * i / self.fps)
 
-
+        print('a')
         y, sr = librosa.load(path, sr=self.sr)
+        print('b')
         S = librosa.feature.melspectrogram(y=y[p - int(self.window_size * self.sr):p],
                                            n_mels=self.n_mels,
                                            n_fft=self.n_fft,

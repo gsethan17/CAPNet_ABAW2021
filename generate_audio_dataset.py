@@ -3,7 +3,7 @@ import os
 import argparse
 import configparser
 from utils import read_pickle, Dataloader_audio
-import numpy as np
+import pickle
 
 # Basic configuration
 parser = argparse.ArgumentParser()
@@ -76,6 +76,23 @@ def get_mel_dataset() :
                                         window_size=WINDOW_SIZE
                                         )
 
+
+    mels = []
+    for i in range(len(train_dataloader)) :
+        print('{} / {}'.format(i+1, len(train_data['x'])), end='\r')
+        data = train_dataloader[i]
+        if data[0] == train_data['x'][i] :
+            mels.append(data[1])
+
+    train_data['m'] = mels
+
+    if len(train_data['m']) == len(train_data['x']) :
+        TRAIN_DATA_SAVE_PATH = os.path.join(os.getcwd(),
+                                            'va_train_seq_topfull_expectInvalid_withMel.pickle')
+        with open(TRAIN_DATA_SAVE_PATH, 'wb') as f:
+            pickle.dump(train_data, f)
+
+
     val_dataloader = Dataloader_audio(x=val_data['x'], i=val_data['i'],
                                       data_path=PATH_DATA,
                                       fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
@@ -83,18 +100,22 @@ def get_mel_dataset() :
                                       hop_length=int(SR * HOP_LENGTH / 1000),
                                       window_size=WINDOW_SIZE
                                       )
-    mels = []
-    for i in range(len(train_dataloader)) :
-        data = train_dataloader[i]
-        if data[0] == train_data['x'][i] :
-            mels.append(data[1])
-            print(data[1])
-        if i == 10 :
-            break
 
-    train_data['m'] = mels
-    print(len(train_data['m']))
-    print(len(train_data['x']))
+    mels = []
+    for i in range(len(val_dataloader)):
+        print('{} / {}'.format(i + 1, len(val_dataloader)), end='\r')
+        data = val_dataloader[i]
+        if data[0] == val_data['x'][i]:
+            mels.append(data[1])
+
+    val_data['m'] = mels
+
+    if len(val_data['m']) == len(val_data['x']):
+        VAL_DATA_SAVE_PATH = os.path.join(os.getcwd(),
+                                            'va_val_seq_topfull_expectInvalid_withMel.pickle')
+        with open(VAL_DATA_SAVE_PATH, 'wb') as f:
+            pickle.dump(val_data, f)
+
 
 
 if __name__ == "__main__" :

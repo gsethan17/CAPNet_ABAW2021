@@ -153,6 +153,8 @@ def main() :
                                         hop_length=int(SR*HOP_LENGTH/1000),
                                         window_size=WINDOW_SIZE
                                         )
+    print(train_dataloader[0][0].shape)
+    print(train_dataloader[0][1].shape)
     ed_train = time.time()
     print("Train data has been build ({:.1f}seconds).".format(ed_train - st_build))
 

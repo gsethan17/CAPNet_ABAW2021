@@ -3,6 +3,7 @@ import os
 import argparse
 import configparser
 from utils import read_pickle, Dataloader_audio
+import numpy as np
 
 # Basic configuration
 parser = argparse.ArgumentParser()
@@ -82,13 +83,15 @@ def get_mel_dataset() :
                                       hop_length=int(SR * HOP_LENGTH / 1000),
                                       window_size=WINDOW_SIZE
                                       )
-
+    mels = []
     for i in range(len(train_dataloader)) :
         data = train_dataloader[i]
         if data[0] == train_data['x'][i] :
+            mels.append(data[1])
             print(data[1])
         if i == 10 :
             break
+    print(np.array(mels).shape)
 
 
 if __name__ == "__main__" :

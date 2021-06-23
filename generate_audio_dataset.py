@@ -85,7 +85,7 @@ def get_mel_dataset() :
 
     for i in range(len(train_dataloader)) :
         data = train_dataloader[i]
-        if data[0] == train_data['x'][i] and data[2] == train_data['y'][i].numpy() :
+        if data[0] == train_data['x'][i] :
             print(data[0])
         if i == 10 :
             break

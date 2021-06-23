@@ -42,8 +42,8 @@ PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
-TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_seq_topfull_list.pickle')
-VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_seq_topfull_list.pickle')
+TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_latest.pickle')
+VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
 
 ## input setting
 INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))

@@ -77,7 +77,8 @@ MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
                   weight_path=PATH_WEIGHT,
                   input_size = INPUT_IMAGE_SIZE,
                   mel_size = (N_MELS, TIME_BINS),
-                  dropout_rate=DROPOUT_RATE)
+                  dropout_rate=DROPOUT_RATE,
+                  num_seq_image = NUM_SEQ_IMAGE)
 
 ## start time setting
 tm = time.localtime(time.time())
@@ -149,7 +150,8 @@ def main() :
     print("Build the data loader")
     st_build = time.time()
     train_dataloader = Dataloader_sequential(x=train_data['x'], y=train_data['y'], i=train_data['i'],
-                                             image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+                                             image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
+                                             num_seq_image=NUM_SEQ_IMAGE)
     # train_dataloader = Dataloader_audio(y=train_data['y'], i=train_data['i'],
     #                                     data_path = PATH_DATA, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
     #                                     fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
@@ -161,7 +163,8 @@ def main() :
     print("Train data has been build ({:.1f}seconds).".format(ed_train - st_build))
 
     val_dataloader = Dataloader_sequential(x=val_data['x'], y=val_data['y'], i=val_data['i'],
-                                           image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+                                           image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
+                                           num_seq_image=NUM_SEQ_IMAGE)
     # val_dataloader = Dataloader_audio(y=val_data['y'], i=val_data['i'],
     #                                     data_path=PATH_DATA, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
     #                                     fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,

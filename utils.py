@@ -383,12 +383,13 @@ class Dataloader(Sequence) :
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
 class Dataloader_sequential(Sequence) :
-    def __init__(self, x, y, i, image_path, image_size, batch_size=1, shuffle=False):
+    def __init__(self, x, y, i, image_path, image_size, batch_size=1, shuffle=False, num_seq_image = 10):
         self.x, self.y, self.i = x, y, i
         self.image_path = image_path
         self.image_size = image_size
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.num_seq_image = num_seq_image
         self.on_epoch_end()
 
     def __len__(self):
@@ -406,7 +407,7 @@ class Dataloader_sequential(Sequence) :
         batch_x = [self.x[i] for i in indices]
         images = []
         for file_list in batch_x :
-            image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size) for file_name in file_list]
+            image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size) for file_name in file_list[10 - self.num_seq_image:]]
             images.append(image_x)
         batch_y = [self.y[i] for i in indices]
 

@@ -67,7 +67,7 @@ def get_mel_dataset() :
 
     train_data = read_pickle(TRAIN_DATA_PATH)
     val_data = read_pickle(VAL_DATA_PATH)
-
+    '''
     train_dataloader = Dataloader_audio(x=train_data['x'], i=train_data['i'],
                                         data_path=PATH_DATA,
                                         fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
@@ -76,7 +76,7 @@ def get_mel_dataset() :
                                         window_size=WINDOW_SIZE
                                         )
 
-
+    
     mels = []
     for i in range(len(train_dataloader)) :
         print('{} / {}'.format(i+1, len(train_data['x'])), end='\r')
@@ -92,7 +92,7 @@ def get_mel_dataset() :
         with open(TRAIN_DATA_SAVE_PATH, 'wb') as f:
             pickle.dump(train_data, f)
 
-
+    '''
     val_dataloader = Dataloader_audio(x=val_data['x'], i=val_data['i'],
                                       data_path=PATH_DATA,
                                       fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
@@ -111,7 +111,7 @@ def get_mel_dataset() :
     val_data['m'] = mels
 
     if len(val_data['m']) == len(val_data['x']):
-        VAL_DATA_SAVE_PATH = os.path.join(os.getcwd(),
+        VAL_DATA_SAVE_PATH = os.path.join(PATH_DATA,
                                             'va_val_seq_topfull_expectInvalid_withMel.pickle')
         with open(VAL_DATA_SAVE_PATH, 'wb') as f:
             pickle.dump(val_data, f)

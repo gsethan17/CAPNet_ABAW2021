@@ -119,9 +119,9 @@ def get_mel_dataset() :
 
 
 if __name__ == "__main__" :
-    error_list = generate_audio_file()
-    print(error_list)
-
-    # get_mel_dataset()
+    # error_list = generate_audio_file()
+    # print(error_list)
+    #
+    get_mel_dataset()
 
 

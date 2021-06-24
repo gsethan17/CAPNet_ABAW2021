@@ -507,20 +507,26 @@ def metric_CCC(x, y):
 
 # Fill in the blank
 def fib(path) :
-    # file_list = os.path.join(path, '*.txt')
-    # file_list = glob.glob(file_list)
-    file_list = os.listdir(path)
+    file_list = os.path.join(path, '*.txt')
+    file_lists = glob.glob(file_list)
+    # file_list = os.listdir(path)
 
     save_path = os.path.join(path, 'fib')
 
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
 
-    for file in file_list :
-        txt_list = read_txt(os.path.join(path, file))
+    sub_flag = False
+
+    for file_path in file_lists :
+        file = os.path.basename(file_path)
+        txt_list = read_txt(file_path)
         save_file_path = os.path.join(save_path, file)
 
         flag = False
+
+        if file.split('.')[0].split('_')[-1] == 'right' or file.split('.')[0].split('_')[-1] == 'left' :
+            sub_flag = True
 
         for i, txt in enumerate(txt_list) :
             if i > 0 :
@@ -530,8 +536,12 @@ def fib(path) :
 
                 if v == -5 or a == -5 :
                     if not flag :
-                        content = "{},{}\n".format(v, a)
-                        f.write(content)
+                        if sub_flag :
+                            content = "{},{}\n".format(v, a)
+                            f.write(content)
+                        else :
+                            content = "{},{}\n".format(0.0, 0.0)
+                            f.write(content)
                     else :
                         content = "{},{}\n".format(v_pre, a_pre)
                         f.write(content)

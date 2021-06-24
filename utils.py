@@ -506,12 +506,15 @@ def metric_CCC(x, y):
     return cccs
 
 # Fill in the blank
-def fib(path) :
+def fib(path, zero=False) :
     file_list = os.path.join(path, '*.txt')
     file_lists = glob.glob(file_list)
     # file_list = os.listdir(path)
 
-    save_path = os.path.join(path, 'fib')
+    if zero :
+        save_path = os.path.join(path, 'fib0')
+    else :
+        save_path = os.path.join(path, 'fib')
 
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
@@ -543,8 +546,12 @@ def fib(path) :
                             content = "{},{}\n".format(0.0, 0.0)
                             f.write(content)
                     else :
-                        content = "{},{}\n".format(v_pre, a_pre)
-                        f.write(content)
+                        if zero :
+                            content = "{},{}\n".format(0.0, 0.0)
+                            f.write(content)
+                        else :
+                            content = "{},{}\n".format(v_pre, a_pre)
+                            f.write(content)
                 else :
                     content = "{},{}\n".format(v, a)
                     f.write(content)
@@ -672,6 +679,8 @@ if __name__ == '__main__' :
     if args.mode == 'compare' :
         compare(args.path1)
     elif args.mode == 'fib' :
-        fib(args.path1)
+        fib(args.path1, zero = False)
+    elif args.mode == 'fib0':
+        fib(args.path1, zero = True)
     elif args.mode == 'merge' :
         merge(args.path1, args.path2)

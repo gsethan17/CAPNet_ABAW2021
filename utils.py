@@ -526,6 +526,7 @@ def fib(path) :
         flag = False
 
         if file.split('.')[0].split('_')[-1] == 'right' or file.split('.')[0].split('_')[-1] == 'left' :
+            print(file)
             sub_flag = True
 
         for i, txt in enumerate(txt_list) :

@@ -54,7 +54,7 @@ def convblock(channels) :
     return model
 
 def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt'),
-              window_size = 10, input_size=(224,224),
+              num_seq_image = 10, input_size=(224,224),
               mel_size = (128, 301),
               dropout_rate = 0.2) :
     if key == 'FER' :
@@ -76,7 +76,8 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         base_model = ResNet34(cardinality=32, se='parallel_add')
 
         # load pre-trained weights of base model
-        base_weights = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt')
+        # base_weights = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt')
+        base_weights = os.path.join(os.getcwd(), 'results', '614_13_15_FER', 'best_weights')
         assert len(glob.glob(base_weights + '*')) > 1, 'There is no weight file | {}'.format(base_weights)
         base_model.load_weights(base_weights)
         # print("The model weights has been load")
@@ -90,8 +91,8 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             sub_model.add(base_model.layers[i])
 
 
-        input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
-        for i in range(window_size) :
+        input_ = tf.keras.Input(shape=(num_seq_image, input_size[0], input_size[1], 3))
+        for i in range(num_seq_image) :
             out_ = sub_model(input_[:,i,:,:,:])
 
             if i == 0 :
@@ -104,7 +105,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
                 output_ = tf.concat([output_, out_3], axis = 1)
         # new
         # '''
-        lstm = LSTM(256, input_shape=(window_size, 512), dropout=dropout_rate)(output_)
+        lstm = LSTM(256, input_shape=(num_seq_image, 512), dropout=dropout_rate)(output_)
         
         do1 = Dropout(rate=dropout_rate)(lstm)
         fo1 = Dense(256, activation = 'tanh')(do1)
@@ -116,7 +117,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
 
         # old
         '''
-        lstm = LSTM(256, input_shape = (window_size, 512))(output_)
+        lstm = LSTM(256, input_shape = (num_seq_image, 512))(output_)
         fo = Dense(2, activation='tanh')(lstm)
 
         model = Model(inputs=input_, outputs=fo)

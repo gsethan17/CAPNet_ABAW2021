@@ -49,6 +49,7 @@ VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
 FPS = int(config['INPUT']['FPS'])
 INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
 WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
+NUM_SEQ_IMAGE = int(config['INPUT']['NUM_SEQ_IMAGE'])
 
 SR = int(config['INPUT']['SR'])
 N_MELS = int(config['INPUT']['N_MELS'])
@@ -97,6 +98,9 @@ if not os.path.isdir(SAVE_PATH):
 f = open(os.path.join(SAVE_PATH, "setting.txt"), "w")
 setting = "Train model : {}.\nBatch size : {}.\nLearning rate : {}\nDropout : {}\n".format(MODEL_KEY, BATCH_SIZE, LEARNING_RATE, DROPOUT_RATE)
 f.write(setting)
+if MODEL_KEY == 'FER_LSTM' :
+    setting = "Number of sequential images : {}\n".format(NUM_SEQ_IMAGE)
+    f.write(setting)
 # if LEARNING_RATE_DECAY :
 #     setting = "Learning rate decay constant : {}\n".format(DECAY_CONSTANT)
 #     f.write(setting)

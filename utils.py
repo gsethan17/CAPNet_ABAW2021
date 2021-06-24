@@ -573,6 +573,9 @@ def compare(path) :
         name = os.path.basename(prediction_list)
         predictions = read_txt(prediction_list)
 
+        if name == 'video58.txt' :
+            continue
+
         pred = []
         for i in range(len(predictions)-1) :
             pred.append([float(x) for x in predictions[(i+1)]])

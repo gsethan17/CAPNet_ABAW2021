@@ -516,9 +516,8 @@ def fib(path) :
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
 
-    sub_flag = False
-
     for file_path in file_lists :
+        sub_flag = False
         file = os.path.basename(file_path)
         txt_list = read_txt(file_path)
         save_file_path = os.path.join(save_path, file)

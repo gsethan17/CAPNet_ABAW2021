@@ -414,6 +414,9 @@ class Dataloader_sequential(Sequence) :
         name = idx_list[0]
         idx = idx_list[1]
 
+        if name.split('_')[-1] == 'right' or name.split('_')[-1] == 'left':
+            name = '_'.join(name.split('_')[:-1])
+
         path = os.path.join(self.audio_path, name + '_mel.pickle')
         mels = read_pickle(path)
 

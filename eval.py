@@ -7,7 +7,7 @@ import time
 import cv2
 import glob
 import numpy as np
-
+'''
 ################### Limit GPU Memory ###################
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print("########################################")
@@ -25,7 +25,7 @@ if gpus:
 else:
     print('GPU is not available')
 ##########################################################
-
+'''
 # Basic configuration
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',
@@ -45,18 +45,35 @@ PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_SWITCH_INFO = config[args.location]['PATH_SWITCH_INFO']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
-# PATH_SEQ_WEIGHT = config[args.location]['PATH_SEQ_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
-VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_list.pickle')
+VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
 
 ## input setting
+ISIMAGE = config['INPUT'].getboolean('ISIMAGE')
+ISAUDIO = config['INPUT'].getboolean('ISAUDIO')
+
+FPS = int(config['INPUT']['FPS'])
 INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
+WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
+NUM_SEQ_IMAGE = int(config['INPUT']['NUM_SEQ_IMAGE'])
+
+SR = int(config['INPUT']['SR'])
+N_MELS = int(config['INPUT']['N_MELS'])
+N_FFT = int(config['INPUT']['N_FFT'])
+WIN_LENGTH = int(config['INPUT']['L_WIN'])
+HOP_LENGTH = int(config['INPUT']['L_HOP'])
+TIME_BINS = int(WINDOW_SIZE * 1000 / HOP_LENGTH) + 1
 
 ## model setting
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
+
 ### Model load to global variable
-MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED, weight_path=PATH_WEIGHT, input_size = INPUT_IMAGE_SIZE)
+MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
+                  weight_path=PATH_WEIGHT,
+                  input_size = INPUT_IMAGE_SIZE,
+                  mel_size = (N_MELS, TIME_BINS),
+                  num_seq_image = NUM_SEQ_IMAGE)
 
 
 ## evaluation setting
@@ -148,8 +165,8 @@ def write_sequence(type='val') :
         os.makedirs(SAVE_PATH)
 
     # load dataset
-    data_path = os.path.join(PATH_DATA, 'va_{}_seq_topfull_list.pickle'.format(type))
-    data = read_pickle(data_path)
+    # data_path = os.path.join(PATH_DATA, 'va_{}_seq_topfull_list.pickle'.format(type))
+    data = read_pickle(VAL_DATA_PATH)
 
     # load switching info
     # switch_images = read_pickle(os.path.join(PATH_SWITCH_INFO, 'switch_images.pickle'))
@@ -241,7 +258,7 @@ def write_sequence(type='val') :
                         count = 0
 
                 else:
-                    x = [load_image(os.path.join(IMAGE_PATH, file_name), INPUT_IMAGE_SIZE) for file_name in data['x'][idx]]
+                    x = [load_image(os.path.join(IMAGE_PATH, file_name), INPUT_IMAGE_SIZE) for file_name in data['x'][idx][10 - NUM_SEQ_IMAGE:]]
                     x = tf.expand_dims(x, axis=0)
 
                     if count == 0:

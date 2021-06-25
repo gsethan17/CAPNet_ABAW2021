@@ -42,10 +42,14 @@ PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
+PATH_AUDIO = os.path.join(PATH_DATA, 'audios')
 TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_latest.pickle')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
 
 ## input setting
+ISIMAGE = config['INPUT'].getboolean('ISIMAGE')
+ISAUDIO = config['INPUT'].getboolean('ISAUDIO')
+
 FPS = int(config['INPUT']['FPS'])
 INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
 WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
@@ -150,28 +154,22 @@ def main() :
     print("Build the data loader")
     st_build = time.time()
     train_dataloader = Dataloader_sequential(x=train_data['x'], y=train_data['y'], i=train_data['i'],
-                                             image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
-                                             num_seq_image=NUM_SEQ_IMAGE)
-    # train_dataloader = Dataloader_audio(y=train_data['y'], i=train_data['i'],
-    #                                     data_path = PATH_DATA, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
-    #                                     fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
-    #                                     win_length=int(SR*WIN_LENGTH/1000),
-    #                                     hop_length=int(SR*HOP_LENGTH/1000),
-    #                                     window_size=WINDOW_SIZE
-    #                                     )
+                                             image_path=IMAGE_PATH, audio_path=PATH_AUDIO,
+                                             image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
+                                             num_seq_image=NUM_SEQ_IMAGE,
+                                             fps=FPS, sr=SR, hop_length=HOP_LENGTH, window_size=WINDOW_SIZE,
+                                             isImage=ISIMAGE, isAudio=ISAUDIO)
+
     ed_train = time.time()
     print("Train data has been build ({:.1f}seconds).".format(ed_train - st_build))
 
     val_dataloader = Dataloader_sequential(x=val_data['x'], y=val_data['y'], i=val_data['i'],
-                                           image_path=IMAGE_PATH, image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
-                                           num_seq_image=NUM_SEQ_IMAGE)
-    # val_dataloader = Dataloader_audio(y=val_data['y'], i=val_data['i'],
-    #                                     data_path=PATH_DATA, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
-    #                                     fps=FPS, sr=SR, n_mels=N_MELS, n_fft=N_FFT,
-    #                                     win_length=int(SR * WIN_LENGTH / 1000),
-    #                                     hop_length=int(SR * HOP_LENGTH / 1000),
-    #                                     window_size=WINDOW_SIZE
-    #                                     )
+                                           image_path=IMAGE_PATH, audio_path=PATH_AUDIO,
+                                           image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
+                                           num_seq_image=NUM_SEQ_IMAGE,
+                                           fps=FPS, sr=SR, hop_length=HOP_LENGTH, window_size=WINDOW_SIZE,
+                                           isImage=ISIMAGE, isAudio=ISAUDIO)
+
     ed_val = time.time()
     print("Validation data has been build ({:.1f}seconds).".format(ed_val - ed_train))
 

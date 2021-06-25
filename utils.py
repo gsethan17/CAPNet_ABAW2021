@@ -383,13 +383,22 @@ class Dataloader(Sequence) :
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
 class Dataloader_sequential(Sequence) :
-    def __init__(self, x, y, i, image_path, image_size, batch_size=1, shuffle=False, num_seq_image = 10):
+    def __init__(self, x, y, i, image_path, audio_path, image_size, batch_size=1, shuffle=False, num_seq_image = 10,
+                 fps=30, sr=44100, hop_length=441, window_size=3,
+                 isImage=False, isAudio=False):
         self.x, self.y, self.i = x, y, i
         self.image_path = image_path
+        self.audio_path = audio_path
         self.image_size = image_size
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.num_seq_image = num_seq_image
+        self.fps = fps
+        self.sr = sr
+        self.hop_length = hop_length
+        self.window_size = window_size
+        self.isImage = isImage
+        self.isAudio = isAudio
         self.on_epoch_end()
 
     def __len__(self):
@@ -401,17 +410,48 @@ class Dataloader_sequential(Sequence) :
         if self.shuffle == True :
             np.random.shuffle(self.indices)
 
+    def get_mel(self, idx_list):
+        name = idx_list[0]
+        idx = idx_list[1]
+
+        path = os.path.join(self.audio_path, name + '_mel.pickle')
+        mels = read_pickle(path)
+
+        ms = int(idx / self.fps * 1000)
+        mp = int(ms * (1 / self.hop_length) + 1)
+        w = int((self.window_size * 1000) * (1 / self.hop_length) + 1)
+
+        return mels[:, mp-w:mp]
+
     def __getitem__(self, idx):
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
 
-        batch_x = [self.x[i] for i in indices]
-        images = []
-        for file_list in batch_x :
-            image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size) for file_name in file_list[10 - self.num_seq_image:]]
-            images.append(image_x)
         batch_y = [self.y[i] for i in indices]
 
-        return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
+        if self.isImage :
+            batch_x = [self.x[i] for i in indices]
+            images = []
+            for file_list in batch_x :
+                image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size) for file_name in file_list[10 - self.num_seq_image:]]
+                images.append(image_x)
+
+        if self.isAudio :
+            batch_i = [self.i[i] for i in indices]
+
+            mels = []
+            for idx_list in batch_i :
+                mels.append(self.load_mel(idx_list))
+
+        if self.isImage :
+            if self.isAudio :
+                return tf.convert_to_tensor(images), tf.convert_to_tensor(mels), tf.convert_to_tensor(batch_y)
+            else :
+                return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
+        else :
+            if self.isAudio :
+                return tf.convert_to_tensor(mels), tf.convert_to_tensor(batch_y)
+            else :
+                return -1
 
 class Dataloader_audio(Sequence) :
     def __init__(self, x, i, data_path,

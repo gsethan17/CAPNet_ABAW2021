@@ -71,6 +71,8 @@ def get_mel_dataset() :
     global PATH_AUDIO
 
     for name_audio in os.listdir(PATH_AUDIO):
+        if not name_audio.split('.')[-1] == 'wav' :
+            continue
         PATH_SAVE_AUDIO = os.path.join(PATH_AUDIO, name_audio.split('.')[0] + '_mel.pickle')
 
         y, sr = librosa.load(os.path.join(PATH_AUDIO, name_audio), sr = SR)

@@ -77,7 +77,7 @@ def get_mel_dataset() :
 
         y, sr = librosa.load(os.path.join(PATH_AUDIO, name_audio), sr = SR)
         S = librosa.feature.melspectrogram(y=y, n_mels=N_MELS, n_fft=N_FFT,
-                                           win_length=(WIN_LENGTH*SR/1000), hop_length=(HOP_LENGTH*SR/1000))
+                                           win_length=int(WIN_LENGTH*SR/1000), hop_length=int(HOP_LENGTH*SR/1000))
         db_S = librosa.power_to_db(S, ref=np.max)
         norm_log_S = normalize_mel(db_S)
 

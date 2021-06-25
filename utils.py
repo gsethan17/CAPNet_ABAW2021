@@ -424,7 +424,9 @@ class Dataloader_sequential(Sequence) :
         mp = int(ms * (1 / self.hop_length) + 1)
         w = int((self.window_size * 1000) * (1 / self.hop_length) + 1)
 
-        return mels[:, mp-w:mp]
+        mel = tf.expand_dims(mels[:, mp - w:mp], axis=-1)
+
+        return mel
 
     def __getitem__(self, idx):
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]

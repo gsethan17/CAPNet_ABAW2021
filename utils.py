@@ -440,7 +440,7 @@ class Dataloader_sequential(Sequence) :
 
             mels = []
             for idx_list in batch_i :
-                mels.append(self.load_mel(idx_list))
+                mels.append(self.get_mel(idx_list))
 
         if self.isImage :
             if self.isAudio :

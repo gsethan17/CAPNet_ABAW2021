@@ -81,7 +81,9 @@ def get_mel_dataset() :
 
         with open(PATH_SAVE_AUDIO, 'wb') as f:
             pickle.dump(norm_log_S, f)
+            print(norm_log_S.shape)
             print(name_audio)
+        f.close()
 
 
 

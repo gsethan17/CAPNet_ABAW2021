@@ -437,7 +437,10 @@ class Dataloader_sequential(Sequence) :
             batch_x = [self.x[i] for i in indices]
             images = []
             for file_list in batch_x :
-                image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size) for file_name in file_list[10 - self.num_seq_image:]]
+                # image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size) for file_name in file_list[10 - self.num_seq_image:]]
+                # Autoregressive
+                image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size) for file_name in
+                           file_list[:-1]]
                 images.append(image_x)
 
         if self.isAudio :

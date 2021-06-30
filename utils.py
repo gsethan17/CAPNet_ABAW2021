@@ -71,7 +71,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             print(weight_path)
 
 
-    elif key == 'FER_LSTM' :
+    elif key == 'AR' :
         # Base model load
         base_model = ResNet34(cardinality=32, se='parallel_add')
 

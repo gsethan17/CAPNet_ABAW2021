@@ -108,7 +108,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         lstm = LSTM(256, input_shape=(num_seq_image, 512), dropout=dropout_rate)(output_)
         
         do1 = Dropout(rate=dropout_rate)(lstm)
-        fo1 = Dense(256, activation = 'relu')(do1)
+        fo1 = Dense(256, activation = 'tanh')(do1)
         fo2 = Dense(2, activation='tanh')(fo1)
         
         model = Model(inputs=input_, outputs=fo2)

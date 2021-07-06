@@ -9,6 +9,7 @@ with test set of Aff-wild2
 [Download link](https://drive.google.com/file/d/1Uu9DlWQRFoRBHVfY3IhKrt5zmbBU11CK/view?usp=sharing)
 
 2. Extract to `DATA_PATH` of `config.ini`.  
+`test_images_for_demo` folder should be in `DATA_PATH`.  
 Please refer to the `README` among the extracted files for the details.
 
 3. 

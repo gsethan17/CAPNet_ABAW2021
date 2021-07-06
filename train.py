@@ -42,29 +42,24 @@ PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
-PATH_AUDIO = os.path.join(PATH_DATA, 'audios')
 TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_latest.pickle')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
-
-## input setting
-ISIMAGE = config['INPUT'].getboolean('ISIMAGE')
-ISAUDIO = config['INPUT'].getboolean('ISAUDIO')
-
-FPS = int(config['INPUT']['FPS'])
-INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
-WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
-NUM_SEQ_IMAGE = int(config['INPUT']['NUM_SEQ_IMAGE'])
-
-SR = int(config['INPUT']['SR'])
-N_MELS = int(config['INPUT']['N_MELS'])
-N_FFT = int(config['INPUT']['N_FFT'])
-WIN_LENGTH = int(config['INPUT']['L_WIN'])
-HOP_LENGTH = int(config['INPUT']['L_HOP'])
-TIME_BINS = int(WINDOW_SIZE * 1000 / HOP_LENGTH) + 1
 
 ## model setting
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
+
+## input setting
+INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
+
+if MODEL_KEY == 'CAPNet' :
+    WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
+
+    FPS = 30
+    STRIDE = 10
+
+    # NUM_SEQ_IMAGE = int(config['INPUT']['NUM_SEQ_IMAGE'])
+    NUM_SEQ_IMAGE = int(WINDOW_SIZE * FPS / STRIDE)
 
 ## train setting
 EPOCHS = int(config['TRAIN']['EPOCHS'])
@@ -80,7 +75,6 @@ METRIC = metric_CCC
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
                   weight_path=PATH_WEIGHT,
                   input_size = INPUT_IMAGE_SIZE,
-                  mel_size = (N_MELS, TIME_BINS),
                   dropout_rate=DROPOUT_RATE,
                   num_seq_image = NUM_SEQ_IMAGE)
 
@@ -103,12 +97,9 @@ if not os.path.isdir(SAVE_PATH):
 f = open(os.path.join(SAVE_PATH, "setting.txt"), "w")
 setting = "Train model : {}.\nBatch size : {}.\nLearning rate : {}\nDropout : {}\n".format(MODEL_KEY, BATCH_SIZE, LEARNING_RATE, DROPOUT_RATE)
 f.write(setting)
-if MODEL_KEY == 'FER_LSTM' :
+if MODEL_KEY == 'CAPNet' :
     setting = "Number of sequential images : {}\n".format(NUM_SEQ_IMAGE)
     f.write(setting)
-# if LEARNING_RATE_DECAY :
-#     setting = "Learning rate decay constant : {}\n".format(DECAY_CONSTANT)
-#     f.write(setting)
 if PRETRAINED :
     setting = "Pretrained : True\nWeight path : {}\n".format(PATH_WEIGHT)
     f.write(setting)
@@ -153,43 +144,32 @@ def main() :
 
     print("Build the data loader")
     st_build = time.time()
-    train_dataloader = Dataloader_sequential(x=train_data['x'], y=train_data['y'], i=train_data['i'],
-                                             image_path=IMAGE_PATH, audio_path=PATH_AUDIO,
-                                             image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
-                                             num_seq_image=NUM_SEQ_IMAGE,
-                                             fps=FPS, sr=SR, hop_length=HOP_LENGTH, window_size=WINDOW_SIZE,
-                                             isImage=ISIMAGE, isAudio=ISAUDIO)
+    if MODEL_KEY == 'FER-Tuned' :
+        train_dataloader = Dataloader(x=train_data['x'], y=train_data['y'],
+                                      image_path=IMAGE_PATH,
+                                      image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE,
+                                      shuffle=SHUFFLE,)
+        val_dataloader = Dataloader(x=val_data['x'], y=val_data['y'],
+                                      image_path=IMAGE_PATH,
+                                      image_size=INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE,
+                                      shuffle=SHUFFLE, )
+    elif MODEL_KEY == 'CAPNet':
+        train_dataloader = Dataloader_sequential(x=train_data['x'], y=train_data['y'], i=train_data['i'],
+                                                 image_path=IMAGE_PATH,
+                                                 image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
+                                                 num_seq_image=NUM_SEQ_IMAGE)
+        val_dataloader = Dataloader_sequential(x=val_data['x'], y=val_data['y'], i=val_data['i'],
+                                               image_path=IMAGE_PATH,
+                                               image_size=INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
+                                               num_seq_image=NUM_SEQ_IMAGE)
+    else :
+        print("MODEL_KEY value is not valid")
+        return -1
 
     ed_train = time.time()
-    print("Train data has been build ({:.1f}seconds).".format(ed_train - st_build))
+    print("Dataloader has been build ({:.1f}seconds).".format(ed_train - st_build))
 
-    val_dataloader = Dataloader_sequential(x=val_data['x'], y=val_data['y'], i=val_data['i'],
-                                           image_path=IMAGE_PATH, audio_path=PATH_AUDIO,
-                                           image_size = INPUT_IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=SHUFFLE,
-                                           num_seq_image=NUM_SEQ_IMAGE,
-                                           fps=FPS, sr=SR, hop_length=HOP_LENGTH, window_size=WINDOW_SIZE,
-                                           isImage=ISIMAGE, isAudio=ISAUDIO)
 
-    ed_val = time.time()
-    print("Validation data has been build ({:.1f}seconds).".format(ed_val - ed_train))
-
-    print(train_dataloader[0][0].shape)
-    print(train_dataloader[0][1].shape)
-
-    '''
-    # pre-evaluation
-    print("Pre-evaluation Start...")
-    eval_result = []
-
-    for e in range(BATCH_SIZE*100) :
-        eval_x, eval_y = val_dataloader[e]
-
-        _, eval_metric = val_step(eval_x, eval_y)
-        eval_result.append(tf.math.reduce_mean(eval_metric).numpy())
-        print("{:>5} / {:>5} || {:.4f}".format(e + 1, BATCH_SIZE*100, sum(eval_result)/len(eval_result)), end='\r')
-    print("Pre-evaluation result : ", sum(eval_result)/len(eval_result))
-    val_dataloader.on_epoch_end()
-    '''
     ## use gradient tape
     results = {}
     results['train_loss'] = []

@@ -3,10 +3,8 @@ import tensorflow as tf
 import os
 import argparse
 import configparser
-import time
 import cv2
 import glob
-import numpy as np
 
 ################### Limit GPU Memory ###################
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -30,12 +28,10 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',
                     help='Enter the server environment to be trained on')
-parser.add_argument('--mode', default='show',
-                    help='Enter the desired mode between write and show')
+parser.add_argument('--mode', default='write_seq',
+                    help='Enter the desired mode')
 
 args = parser.parse_args()
-
-# args.location
 
 config = configparser.ConfigParser()
 config.read('./config.ini')
@@ -48,31 +44,27 @@ PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
 
-## input setting
-ISIMAGE = config['INPUT'].getboolean('ISIMAGE')
-ISAUDIO = config['INPUT'].getboolean('ISAUDIO')
-
-FPS = int(config['INPUT']['FPS'])
-INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
-WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
-NUM_SEQ_IMAGE = int(config['INPUT']['NUM_SEQ_IMAGE'])
-
-SR = int(config['INPUT']['SR'])
-N_MELS = int(config['INPUT']['N_MELS'])
-N_FFT = int(config['INPUT']['N_FFT'])
-WIN_LENGTH = int(config['INPUT']['L_WIN'])
-HOP_LENGTH = int(config['INPUT']['L_HOP'])
-TIME_BINS = int(WINDOW_SIZE * 1000 / HOP_LENGTH) + 1
-
 ## model setting
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
+
+## input setting
+INPUT_IMAGE_SIZE = (int(config['INPUT']['IMAGE_WIDTH']), int(config['INPUT']['IMAGE_HEIGHT']))
+
+if MODEL_KEY == 'CAPNet' :
+    WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
+
+    FPS = 30
+    STRIDE = 10
+
+    # NUM_SEQ_IMAGE = int(config['INPUT']['NUM_SEQ_IMAGE'])
+    NUM_SEQ_IMAGE = int(WINDOW_SIZE * FPS / STRIDE)
+
 
 ### Model load to global variable
 MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
                   weight_path=PATH_WEIGHT,
                   input_size = INPUT_IMAGE_SIZE,
-                  mel_size = (N_MELS, TIME_BINS),
                   num_seq_image = NUM_SEQ_IMAGE)
 
 
@@ -80,60 +72,6 @@ MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
 SHUFFLE = config['TRAIN'].getboolean('SHUFFLE')
 METRIC = metric_CCC
-
-@tf.function
-def val_step(X, Y) :
-    global MODEL
-    global METRIC
-
-    predictions = MODEL(X)
-    metric = METRIC(predictions, Y)
-
-    return metric
-
-def evaluate() :
-
-    val_data = read_pickle(VAL_DATA_PATH)
-
-    val_dataloader = Dataloader(x=val_data['x'], y=val_data['y'],
-                                image_path=IMAGE_PATH,
-                                image_size=INPUT_IMAGE_SIZE,
-                                batch_size=BATCH_SIZE,
-                                shuffle=SHUFFLE)
-
-    # predict
-
-    iteration = len(val_dataloader)
-
-    # set the dictionary for stack result
-    val_result = {}
-    val_result['ccc_v'] = []
-    val_result['ccc_a'] = []
-    val_result['ccc_mean'] = []
-
-    print("Evaluation Start...")
-    val_metric_V = []
-    val_metric_A = []
-    val_metric_C = []
-
-    for i in range(iteration) :
-        x, y = val_dataloader[i]
-
-        val_temp_metric = val_step(x, y)
-
-        val_metric_V.append(val_temp_metric[0].numpy())
-        val_metric_A.append(val_temp_metric[1].numpy())
-        val_metric_C.append(tf.math.reduce_mean(val_temp_metric).numpy())
-        print("{:>5} / {:>5} || {:.4f}".format(i+1, iteration, sum(val_metric_C)/len(val_metric_C)), end='\r')
-
-    CCC_V = sum(val_metric_V) / len(val_metric_V)
-    CCC_A = sum(val_metric_A) / len(val_metric_A)
-    CCC_M = sum(val_metric_C) / len(val_metric_C)
-
-    print("Evaluation result!!")
-    print("The CCC value of valence is {:.4f}".format(CCC_V))
-    print("The CCC value of arousal is {:.4f}".format(CCC_A))
-    print("Total CCC value is {:.4f}".format(CCC_M))
 
 def switching(name, image, switch_images, switch_subjects) :
     if name in switch_subjects.keys():
@@ -451,9 +389,7 @@ def write_txt(type='val') :
 
 
 if __name__ == "__main__" :
-    if args.mode == 'show' :
-        evaluate()
-    elif args.mode == 'write' :
+    if args.mode == 'write' :
         write_txt()
     elif args.mode == 'write_seq' :
         write_sequence()
@@ -463,11 +399,4 @@ if __name__ == "__main__" :
         write_sequence(tpye='test')
     else :
         print('Mode parser is not valid')
-
-    # input_ = tf.ones((1, 224, 224, 3))
-    # result = MODEL(input_)
-    # result = tf.squeeze(result)
-    # print(result)
-    # print(result[0])
-    # print(result[1])
 

@@ -128,8 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Model folder
-base_model/
+# Weights folder
+FER_model/ResNeXt34_Parallel_add/
 
 # data folder
 data_guide/

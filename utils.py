@@ -5,16 +5,10 @@ import pickle
 import numpy as np
 import tensorflow as tf
 import glob
-from base_model.ResNet import ResNet34
+from FER_model.ResNet import ResNet34
 from tensorflow.keras.utils import Sequence
-from tensorflow.keras import Input
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import LSTM, GRU, Dense, Conv2D, ConvLSTM2D, BatchNormalization, Dropout, MaxPooling2D, GlobalAveragePooling2D, Activation
-from tensorflow.keras.applications import ResNet50, VGG19
-import cv2
-from skimage.metrics import structural_similarity as ssim
-import librosa
+from tensorflow.keras.layers import LSTM, Dense, Dropout
 
 
 def read_pickle(path) :
@@ -43,28 +37,15 @@ def read_csv(path) :
 
 # Model Load Function
 
-def convblock(channels) :
-    model = Sequential()
-    model.add(Conv2D(channels, 3, padding='same'))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Conv2D(channels, 3, padding='same'))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    return model
+def get_model(key='FER-Tuned', preTrained = True, weight_path=os.path.join(os.getcwd(), 'FER_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt'),
+              num_seq_image = 9, input_size=(224,224), dropout_rate = 0.2) :
 
-def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt'),
-              num_seq_image = 10, input_size=(224,224),
-              mel_size = (128, 301),
-              dropout_rate = 0.2) :
-    if key == 'FER' :
+    if key == 'FER-Tuned' :
         # Model load
         model = ResNet34(cardinality = 32, se = 'parallel_add')
         
         if preTrained :
             # load pre-trained weights
-            # weight_path = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt')
-            # weight_path = os.path.join(os.getcwd(), 'results', '614_1315_FER', 'best_weights')
             assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
             model.load_weights(weight_path)
             print("The model weights has been load")
@@ -75,16 +56,12 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         # Base model load
         base_model = ResNet34(cardinality=32, se='parallel_add')
 
-        # load pre-trained weights of base model
-        # base_weights = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add', 'checkpoint_4_300000-320739.ckpt')
         base_weights = os.path.join(os.getcwd(), 'results', '614_13_15_FER', 'best_weights')
         assert len(glob.glob(base_weights + '*')) > 1, 'There is no weight file | {}'.format(base_weights)
         base_model.load_weights(base_weights)
-        # print("The model weights has been load")
-        # print(weight_path)
+
 
         base_model.build(input_shape=(None, input_size[0], input_size[1], 3))
-        #############################
         sub_model = tf.keras.Sequential()
         sub_model.add(tf.keras.Input(shape=(input_size[0], input_size[1], 3)))
         for i in range(6):
@@ -103,8 +80,7 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
             else :
                 out_3 = tf.expand_dims(out_, axis = 1)
                 output_ = tf.concat([output_, out_3], axis = 1)
-        # new
-        # '''
+
         lstm = LSTM(256, input_shape=(num_seq_image, 512), dropout=dropout_rate)(output_)
         
         do1 = Dropout(rate=dropout_rate)(lstm)
@@ -112,17 +88,6 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         fo2 = Dense(2, activation='tanh')(fo1)
         
         model = Model(inputs=input_, outputs=fo2)
-        # '''
-        # new
-
-        # old
-        '''
-        lstm = LSTM(256, input_shape = (num_seq_image, 512))(output_)
-        fo = Dense(2, activation='tanh')(lstm)
-
-        model = Model(inputs=input_, outputs=fo)
-        '''
-        # old
 
         if preTrained:
             assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
@@ -135,148 +100,6 @@ def get_model(key='FER', preTrained = True, weight_path=os.path.join(os.getcwd()
         model.layers[-1].trainable = True
         model.layers[-2].trainable = True
 
-
-    elif key == 'FER_ConvLSTM' :
-        # Base model load
-        base_model = ResNet34(cardinality=32, se='parallel_add')
-
-        # load pre-trained weights of base model
-        base_weights = os.path.join(os.getcwd(), 'base_model', 'ResNeXt34_Parallel_add',
-                                    'checkpoint_4_300000-320739.ckpt')
-        assert len(glob.glob(base_weights + '*')) > 1, 'There is no weight file | {}'.format(base_weights)
-        base_model.load_weights(base_weights)
-        # print("The model weights has been load")
-        # print(base_weights)
-        
-        model = Sequential()
-        model.add(Input(shape=(10, 224, 224, 3)))
-        '''
-        model.add(ConvLSTM2D(filters=20, kernel_size=(3, 3),
-                             padding='same', return_sequences=True))
-        model.add(BatchNormalization())
-        model.add(ConvLSTM2D(filters=30, kernel_size=(3, 3),
-                             padding='same', return_sequences=True))
-        model.add(BatchNormalization())
-        model.add(ConvLSTM2D(filters=40, kernel_size=(3, 3),
-                             padding='same', return_sequences=True))
-        model.add(BatchNormalization())
-        '''
-        model.add(ConvLSTM2D(filters=3, kernel_size=(3, 3),
-                             padding='same', return_sequences=False))
-        model.add(BatchNormalization())
-        model.add(base_model)
-
-        if preTrained:
-            assert len(glob.glob(weight_path + '*')) > 1, 'There is no weight file | {}'.format(weight_path)
-            model.load_weights(weight_path)
-            print("The model weights has been load")
-            print(weight_path)
-        print(model.summary())
-
-    elif key == 'AUDIO' :
-        model = Sequential()
-        model.add(Input(shape=(mel_size[0], mel_size[1], 1)))
-        model.add(convblock(32))
-        model.add(MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
-        model.add(convblock(64))
-        model.add(MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
-        model.add(convblock(128))
-        model.add(MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
-        model.add(convblock(256))
-        model.add(GlobalAveragePooling2D())
-        model.add(Dense(128, activation='relu'))
-        model.add(Dense(2, activation='tanh'))
-
-
-    return model
-
-    # elif key == 'resnet50' :
-    #     if preTrained :
-    #         base_model = ResNet50(include_top=False,
-    #                               weights='imagenet',
-    #                               input_shape=(input_size[0], input_size[1], 3), pooling='avg')
-    #     else :
-    #         base_model = ResNet50(include_top=False,
-    #                                                 weights=None,
-    #                                                 input_shape=(input_size[0], input_size[1], 3),
-    #                                                 pooling='avg')
-    #
-    #     x = base_model.output
-    #     x = Dense(1024, activation='relu')(x)
-    #     x = Dense(500, activation='relu')(x)
-    #     output_ = Dense(2, activation='tanh')(x)
-    #
-    #     model = Model(inputs=base_model.input,
-    #                                   outputs=output_)
-    #
-    #     return model
-    #
-    # elif key == 'resnet50_gru' :
-    #     if preTrained :
-    #         base_model = ResNet50(include_top=False,
-    #                                                 weights='imagenet',
-    #                                                 input_shape=(input_size[0], input_size[1], 3),
-    #                                                 pooling='avg')
-    #     else :
-    #         base_model = ResNet50(include_top=False,
-    #                                                 weights=None,
-    #                                                 input_shape=(input_size[0], input_size[1], 3),
-    #                                                 pooling='avg')
-    #
-    #     input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
-    #     for i in range(window_size):
-    #         feature = base_model(input_[:, i, :, :, :])
-    #
-    #         if i == 0:
-    #             out_0 = tf.expand_dims(feature, axis=1)
-    #         elif i == 1:
-    #             out_1 = tf.expand_dims(feature, axis=1)
-    #             output_ = tf.concat([out_0, out_1], axis=1)
-    #         else:
-    #             out_3 = tf.expand_dims(feature, axis=1)
-    #             output_ = tf.concat([output_, out_3], axis=1)
-    #
-    #     gru1 = GRU(1024, return_sequences=True)(output_)
-    #     gru2 = GRU(512)(gru1)
-    #     fo = Dense(2, activation='tanh')(gru2)
-    #
-    #     model = Model(inputs=input_, outputs=fo)
-    #
-    #     return model
-    #
-    # elif key == 'vgg19_gru' :
-    #     if preTrained :
-    #         base_model = VGG19(include_top=False,
-    #                                                 weights='imagenet',
-    #                                                 input_shape=(input_size[0], input_size[1], 3),
-    #                                                 pooling='avg')
-    #     else :
-    #         base_model = VGG19(include_top=False,
-    #                                                 weights=None,
-    #                                                 input_shape=(input_size[0], input_size[1], 3),
-    #                                                 pooling='avg')
-    #
-    #     input_ = tf.keras.Input(shape=(window_size, input_size[0], input_size[1], 3))
-    #     for i in range(window_size):
-    #         feature = base_model(input_[:, i, :, :, :])
-    #
-    #         if i == 0:
-    #             out_0 = tf.expand_dims(feature, axis=1)
-    #         elif i == 1:
-    #             out_1 = tf.expand_dims(feature, axis=1)
-    #             output_ = tf.concat([out_0, out_1], axis=1)
-    #         else:
-    #             out_3 = tf.expand_dims(feature, axis=1)
-    #             output_ = tf.concat([output_, out_3], axis=1)
-    #
-    #     gru = GRU(256)(output_)
-    #     fo = Dense(2, activation='tanh')(gru)
-    #
-    #     model = Model(inputs=input_, outputs=fo)
-    #
-    #     return model
-
-# @tf.function
 def load_image(filename, image_size):
     # print(filename)
     try :
@@ -289,72 +112,7 @@ def load_image(filename, image_size):
         image = tf.zeros([image_size[0], image_size[1], 3])
     return image
 
-def loadNresize(img_path, image_size) :
-    img = cv2.imread(img_path)
-    img = cv2.resize(img, (image_size[0], image_size[1]))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    return img
-
-def normalize(img) :
-    img = img / 255.0
-    img = tf.expand_dims(img, axis=-1)
-    return img
-
-def load_td_image(images, image_size) :
-    if os.path.isfile(images[0]) * os.path.isfile(images[1]) * os.path.isfile(images[2]) :
-        img1 = loadNresize(images[0], image_size)
-        img2 = loadNresize(images[1], image_size)
-        img3 = loadNresize(images[2], image_size)
-
-        _, diff1 = ssim(img1, img2, full=True)
-        _, diff2 = ssim(img1, img3, full=True)
-
-        base = normalize(img1)
-        diff1 = normalize(diff1*-1)
-        diff2 = normalize(diff2*-1)
-
-        image_x = tf.concat([base, diff1, diff2], axis = -1)
-
-        return image_x
-
-    else :
-        print(images)
-        return -1
-
 # Dataloader
-class Dataloader_td(Sequence):
-    def __init__(self, x, y, image_path, image_size, batch_size=1, shuffle=False):
-        self.x, self.y, = x, y
-        self.image_path = image_path
-        self.image_size = image_size
-        self.batch_size = batch_size
-        self.shuffle = shuffle
-        self.on_epoch_end()
-
-    def __len__(self):
-        return int(np.ceil(len(self.x)) / float(self.batch_size))
-
-    def on_epoch_end(self):
-        self.indices = np.arange(len(self.x))
-
-        if self.shuffle == True:
-            np.random.shuffle(self.indices)
-
-    def __getitem__(self, idx):
-        indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
-
-        # batch_x = [self.x[i] for i in indices]
-        batch_y = []
-        images = []
-        for i in indices :
-            image_x = load_td_image([os.path.join(self.image_path, self.x[i][(k*-1)]) for k in range(1, 6, 2)], self.image_size)
-            images.append(image_x)
-            batch_y.append(self.y[i])
-
-        return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
-
-
 class Dataloader(Sequence) :
     def __init__(self, x, y, image_path, image_size, batch_size=1, shuffle=False):
         self.x, self.y = x, y
@@ -383,22 +141,13 @@ class Dataloader(Sequence) :
         return tf.convert_to_tensor(image_x), tf.convert_to_tensor(batch_y)
 
 class Dataloader_sequential(Sequence) :
-    def __init__(self, x, y, i, image_path, audio_path, image_size, batch_size=1, shuffle=False, num_seq_image = 10,
-                 fps=30, sr=44100, hop_length=441, window_size=3,
-                 isImage=False, isAudio=False):
+    def __init__(self, x, y, i, image_path, image_size, batch_size=1, shuffle=False, num_seq_image = 10,):
         self.x, self.y, self.i = x, y, i
         self.image_path = image_path
-        self.audio_path = audio_path
         self.image_size = image_size
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.num_seq_image = num_seq_image
-        self.fps = fps
-        self.sr = sr
-        self.hop_length = hop_length
-        self.window_size = window_size
-        self.isImage = isImage
-        self.isAudio = isAudio
         self.on_epoch_end()
 
     def __len__(self):
@@ -410,23 +159,6 @@ class Dataloader_sequential(Sequence) :
         if self.shuffle == True :
             np.random.shuffle(self.indices)
 
-    def get_mel(self, idx_list):
-        name = idx_list[0]
-        idx = idx_list[1]
-
-        if name.split('_')[-1] == 'right' or name.split('_')[-1] == 'left':
-            name = '_'.join(name.split('_')[:-1])
-
-        path = os.path.join(self.audio_path, name + '_mel.pickle')
-        mels = read_pickle(path)
-
-        ms = int(idx / self.fps * 1000)
-        mp = int(ms * (1 / self.hop_length) + 1)
-        w = int((self.window_size * 1000) * (1 / self.hop_length) + 1)
-
-        mel = tf.expand_dims(mels[:, mp - w:mp], axis=-1)
-
-        return mel
 
     def __getitem__(self, idx):
         indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
@@ -437,92 +169,18 @@ class Dataloader_sequential(Sequence) :
             batch_x = [self.x[i] for i in indices]
             images = []
             for file_list in batch_x :
-                # Causal
+                # with current image
                 if self.num_seq_image == 10 :
                     image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size)
                                for file_name in file_list]
-                # Autoregressive
+                # with only past images
                 else :
                     image_x = [load_image(os.path.join(self.image_path, file_name), self.image_size)
                                for file_name in file_list[9 - self.num_seq_image:-1]]
                 images.append(image_x)
 
-        if self.isAudio :
-            batch_i = [self.i[i] for i in indices]
+        return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
 
-            mels = []
-            for idx_list in batch_i :
-                mels.append(self.get_mel(idx_list))
-
-        if self.isImage :
-            if self.isAudio :
-                return tf.convert_to_tensor(images), tf.convert_to_tensor(mels), tf.convert_to_tensor(batch_y)
-            else :
-                return tf.convert_to_tensor(images), tf.convert_to_tensor(batch_y)
-        else :
-            if self.isAudio :
-                return tf.convert_to_tensor(mels), tf.convert_to_tensor(batch_y)
-            else :
-                return -1
-
-class Dataloader_audio(Sequence) :
-    def __init__(self, x, i, data_path,
-                 fps=30, sr=44100, n_mels=128, n_fft=1024, win_length=882,
-                 hop_length=441, window_size=3):
-        self.x, self.i = x, i
-        self.audio_path = os.path.join(data_path, 'audios')
-
-        self.fps = fps
-        self.sr = sr
-        self.n_mels = n_mels
-        self.n_fft = n_fft
-        self.win_length =win_length
-        self.hop_length = hop_length
-        self.window_size = window_size
-        self.min_level_db = -100
-
-        self.on_epoch_end()
-
-    def __len__(self):
-        return len(self.x)
-
-    def on_epoch_end(self):
-        self.indices = np.arange(len(self.x))
-
-
-    def normalize_mel(self, S):
-        return np.clip((S - self.min_level_db) / -self.min_level_db, 0, 1)
-
-    def get_mel(self, name, i):
-        if name.split('_')[-1] == 'right' or name.split('_')[-1] == 'left':
-            name = '_'.join(name.split('_')[:-1])
-
-        path = os.path.join(self.audio_path, name + '.wav')
-
-        p = int(self.sr * i / self.fps)
-
-        y, sr = librosa.load(path, sr=self.sr)
-        S = librosa.feature.melspectrogram(y=y[p - int(self.window_size * self.sr):p],
-                                           n_mels=self.n_mels,
-                                           n_fft=self.n_fft,
-                                           win_length=self.win_length,
-                                           hop_length=self.hop_length)
-        db_S = librosa.power_to_db(S, ref=np.max)
-        norm_log_S = self.normalize_mel(db_S)
-
-        # x = tf.expand_dims(norm_log_S, axis = -1)
-        return norm_log_S
-
-    def __getitem__(self, idx):
-        # indices = self.indices[idx*self.batch_size:(idx+1)*self.batch_size]
-
-        batch_x = self.x[idx]
-
-        batch_i = self.i[idx]
-
-        mel_x = self.get_mel(batch_i[0], batch_i[1])
-
-        return batch_x, mel_x
 
 def CCC_score_np(x, y):
     x_mean = np.mean(x)

@@ -5,7 +5,7 @@ import argparse
 import configparser
 import cv2
 import glob
-
+'''
 ################### Limit GPU Memory ###################
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print("########################################")
@@ -23,7 +23,7 @@ if gpus:
 else:
     print('GPU is not available')
 ##########################################################
-
+'''
 # Basic configuration
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',

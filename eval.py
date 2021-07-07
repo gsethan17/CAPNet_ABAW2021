@@ -316,6 +316,7 @@ def write_submit() :
 
         count = 0
         valence, arousal = -10, -10
+        print(total_len)
         for i in range(int(total_len)):
             print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
 

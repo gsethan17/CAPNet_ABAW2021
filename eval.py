@@ -472,7 +472,7 @@ def write_submit_sequence() :
                     count = 0
 
             else:
-                x = [load_image(os.path.join(IMAGE_PATH, file_name), INPUT_IMAGE_SIZE) for file_name in data['x'][idx][10 - NUM_SEQ_IMAGE:]]
+                x = [load_image(os.path.join(base_dir, file_name), INPUT_IMAGE_SIZE) for file_name in data['x'][idx][10 - NUM_SEQ_IMAGE:]]
                 x = tf.expand_dims(x, axis=0)
 
                 if count == 0:

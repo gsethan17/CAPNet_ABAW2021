@@ -253,7 +253,7 @@ def get_postprocessing(name, img_name, keep, both, zero, m5, prior_valence, prio
         return -5.0, -5.0
 
     elif name in both.keys() :
-        if img_name in both['name'] :
+        if img_name in both[name] :
             return 0.0, 0.0
         else :
             if prior_valence == -10:
@@ -319,11 +319,11 @@ def write_submit() :
         count = 0
         valence, arousal = -10, -10
         for i in range(int(total_len)):
-            print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
+            # print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
 
             image_path = os.path.join(base_dir, 'cropped', name, '{:0>5}'.format(i+1) + '.jpg')
-            print(image_path)
             if not os.path.isfile(image_path) :
+                print(image_path)
                 if count == 0 :
                     valence, arousal = get_postprocessing(name, '{:0>5}'.format(i+1) + '.jpg', keep, both, zero, m5, valence, arousal)
 

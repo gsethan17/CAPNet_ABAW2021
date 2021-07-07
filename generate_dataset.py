@@ -14,7 +14,7 @@ parser.add_argument('--location', default='205',
                     help='Enter the server environment to be trained on')
 parser.add_argument('--mode', default='test',
                         help='Enter the desired mode, train or test')
-parser.add_argument('--type', default='single',
+parser.add_argument('--type', default='sequence',
                         help='Enter the desired data type, single or sequence')
 
 args = parser.parse_args()
@@ -110,7 +110,7 @@ def filtering_topfull(dic) :
                 count += 1
 
 
-        if count = (FPS * WINDOW_SIZE // STRIDE) + 1
+        if count == (FPS * WINDOW_SIZE // STRIDE) + 1
             lists.append(i)
 
     print("{} invalid data is detected".format(len(lists)))
@@ -415,19 +415,19 @@ def generate_sequential_data(type = 'test') :
 
 
 
-# if __name__ == "__main__" :
+if __name__ == "__main__" :
 
-    # if args.mode == 'test' :
-    #
-    #     if args.type == 'sequence':
-    #
-    # elif args.mode == 'train' :
-    #     if args.type == 'single' :
-    #         generate_single_train()
-    #     elif args.type == 'sequence' :
-    #         generate_sequential_data(WINDOW_SIZE, STRIDE)
-    #     else :
-    #         print("Type variable is not valid")
-    #
-    # else :
-    #     print("Mode variable is not valid")
+    if args.mode == 'test' :
+        if args.type == 'sequence':
+            generate_sequential_data()
+
+    elif args.mode == 'train' :
+        if args.type == 'single' :
+            generate_single_train()
+        elif args.type == 'sequence' :
+            generate_sequential_data(type = 'val')
+        else :
+            print("Type variable is not valid")
+
+    else :
+        print("Mode variable is not valid")

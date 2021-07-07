@@ -28,7 +28,7 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',
                     help='Enter the server environment to be trained on')
-parser.add_argument('--type', default='val',
+parser.add_argument('--type', default='test',
                     help='Enter the desired type, val or test')
 
 args = parser.parse_args()

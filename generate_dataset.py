@@ -340,7 +340,7 @@ def generate_sequential_data(type = 'test') :
         test_subject_lists = read_csv(os.path.join(PATH_DATA, 'va_test_set.csv'))
         for j, test_subject_list in enumerate(test_subject_lists):
 
-            test_x, test_idx = get_sequence_test(test_subject_list, WINDOW_SIZE, STRIDE)
+            test_x, test_idx = get_sequence_test(test_subject_list)
 
             test_data['x'] += test_x
             test_data['i'] += test_idx
@@ -370,7 +370,7 @@ def generate_sequential_data(type = 'test') :
         for i, train_subject_list in enumerate(train_subject_lists) :
             train_images = read_csv(os.path.join(PATH_DATA_GUIDE, train_subject_list+'.csv'))
 
-            train_x, train_y, train_idx = get_sequence_data(train_subject_list, train_images, WINDOW_SIZE, STRIDE, switch_images, switch_subjects)
+            train_x, train_y, train_idx = get_sequence_data(train_subject_list, train_images, switch_images, switch_subjects)
 
             train_data['x'] += train_x
             train_data['y'] += train_y
@@ -397,7 +397,7 @@ def generate_sequential_data(type = 'test') :
         for j, val_subject_list in enumerate(val_subject_lists):
             val_images = read_csv(os.path.join(PATH_DATA_GUIDE, val_subject_list + '.csv'))
 
-            val_x, val_y, val_idx = get_sequence_data(val_subject_list, val_images, WINDOW_SIZE, STRIDE, switch_images, switch_subjects)
+            val_x, val_y, val_idx = get_sequence_data(val_subject_list, val_images, switch_images, switch_subjects)
 
             val_data['x'] += val_x
             val_data['y'] += val_y

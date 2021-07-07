@@ -26,7 +26,8 @@ PATH_DATA = config[args.location]['PATH_DATA']
 PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
 PATH_SWITCH_INFO = config[args.location]['PATH_SWITCH_INFO']
 
-WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
+# WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
+WINDOW_SIZE = 3
 FPS = 30
 STRIDE = 10
 
@@ -344,7 +345,7 @@ def generate_sequential_data(type = 'test') :
             test_data['x'] += test_x
             test_data['i'] += test_idx
 
-            print(j, len(test_subject_lists), np.array(test_data['x']).shape, np.array(test_x).shape)
+            print(j, '||', len(test_subject_lists), end='\r')
 
         test_data = filtering_topfull(test_data)
 

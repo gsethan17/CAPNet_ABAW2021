@@ -456,9 +456,9 @@ def write_submit_sequence() :
                 else :
                     predicts = MODEL(xs)
 
-                    for i in range(len(predicts)):
-                        valence = predicts[i][0]
-                        arousal = predicts[i][1]
+                    for p in range(len(predicts)):
+                        valence = predicts[p][0]
+                        arousal = predicts[p][1]
 
                         content = "{},{}\n".format(valence, arousal)
                         f.write(content)
@@ -486,9 +486,9 @@ def write_submit_sequence() :
                     if i == (int(total_len) - 1):
                         predicts = MODEL(xs)
 
-                        for i in range(len(predicts)):
-                            valence = predicts[i][0]
-                            arousal = predicts[i][1]
+                        for p in range(len(predicts)):
+                            valence = predicts[p][0]
+                            arousal = predicts[p][1]
 
                             content = "{},{}\n".format(valence, arousal)
                             f.write(content)
@@ -501,9 +501,9 @@ def write_submit_sequence() :
                 else:
                     predicts = MODEL(xs)
 
-                    for i in range(len(predicts)):
-                        valence = predicts[i][0]
-                        arousal = predicts[i][1]
+                    for p in range(len(predicts)):
+                        valence = predicts[p][0]
+                        arousal = predicts[p][1]
 
                         content = "{},{}\n".format(valence, arousal)
                         f.write(content)

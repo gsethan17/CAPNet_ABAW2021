@@ -292,7 +292,7 @@ def write_submit() :
         os.makedirs(SAVE_PATH)
 
     for i, name in enumerate(list_tests):
-
+        print(name)
         save_file_path = os.path.join(SAVE_PATH, name + ".txt")
 
         if "_" in name:
@@ -320,7 +320,7 @@ def write_submit() :
             print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
 
             image_path = os.path.join(base_dir, 'cropped', name, '{:0>5}'.format(i+1) + '.jpg')
-
+            print(image_path)
             if not os.path.isfile(image_path) :
                 if count == 0 :
                     valence, arousal = get_postprocessing(name, '{:0>5}'.format(i+1) + '.jpg', keep, both, zero, m5, valence, arousal)

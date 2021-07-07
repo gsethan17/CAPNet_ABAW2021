@@ -4,14 +4,31 @@ import pickle
 import glob
 import numpy as np
 from utils import read_pickle, read_csv, read_txt
+import argparse
+import configparser
+import cv2
 
+# Basic configuration
+parser = argparse.ArgumentParser()
+parser.add_argument('--location', default='205',
+                    help='Enter the server environment to be trained on')
+parser.add_argument('--mode', default='test',
+                        help='Enter the desired mode, train or test')
+parser.add_argument('--type', default='single',
+                        help='Enter the desired data type, single or sequence')
 
-PATH_DATA_GUIDE = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError', 'cropped')
-PATH_SWITCH_INFO = os.path.join(os.getcwd(), 'data_guide', 'dropDetectError')
-PATH_DATA = '/home/gsethan/Documents/Aff-Wild2-ICCV2021/'
-# PATH_DATA = os.path.join(os.getcwd(), 'data')
+args = parser.parse_args()
 
+config = configparser.ConfigParser()
+config.read('./config.ini')
+
+PATH_DATA = config[args.location]['PATH_DATA']
+PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
+PATH_SWITCH_INFO = config[args.location]['PATH_SWITCH_INFO']
+
+WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
 FPS = 30
+STRIDE = 10
 
 def count(dic):
     count = 0
@@ -67,9 +84,58 @@ def get_samples(dic, switch_images, switch_subjects) :
     print(error_list)
     return list_x, list_y
 
-def generate_single_data() :
-    list_subjects = sorted([x.rstrip('.csv') for x in os.listdir(PATH_DATA_GUIDE) if x.endswith('.csv')])
+def filtering_invalid(dic) :
+    lists = []
+    for i in range(len(dic['y'])) :
+        if dic['y'][i][0] == -5 or dic['y'][i][1] == -5 :
+            lists.append(i)
 
+    print("{} invalid data is detected".format(len(lists)))
+
+    lists.reverse()
+    for j in range(lists) :
+        keys = dic.keys()
+        for key in keys :
+            dic[key].pop(i)
+
+    return dic
+
+# def generate_single_test() :
+#     base_dir = os.path.join(PATH_DATA, 'test_images_for_demo')
+#     if not os.path.isdir(base_dir) :
+#         print("You need the image, please download the 'test_images_for_demo'.")
+#         return -1
+#
+#     list_tests = read_csv(os.path.join(PATH_DATA, 'va_test_set.csv'))
+#
+#     for name in list_tests :
+#
+#         if "_" in name :
+#             if name.split('_')[-1] == 'right' or name.split('_')[-1] == 'left':
+#                 video_pos = os.path.join(PATH_DATA, 'videos', '_'.join(name.split('_')[:-1]) + '.*')
+#             else:
+#                 video_pos = os.path.join(PATH_DATA, 'videos', name + '.*')
+#         else:
+#             video_pos = os.path.join(PATH_DATA, 'videos', name + '.*')
+#
+#         if not len(glob.glob(video_pos)) == 1:
+#             print("Video path is not vaild : {}".format(name))
+#             return -1
+#
+#         cap = cv2.VideoCapture(video_pos)
+#         total_length = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+
+
+
+
+
+
+
+def generate_single_train() :
+    list_subjects = sorted([x.rstrip('.csv') for x in os.listdir(PATH_DATA_GUIDE) if x.endswith('.csv')])
+    print(list_subjects)
+    return -1
     total_samples = {}
 
     for i, name in enumerate(list_subjects):
@@ -77,12 +143,8 @@ def generate_single_data() :
 
         total_samples[name] = read_csv(file_path)
 
-
-
     list_trains = read_csv(os.path.join(PATH_DATA, 'va_train_set.csv'))
     list_vals = read_csv(os.path.join(PATH_DATA, 'va_val_set.csv'))
-
-
 
     dic_trains = {}
     for subject in list_trains:
@@ -93,7 +155,6 @@ def generate_single_data() :
     for subject in list_vals:
         if subject in total_samples.keys():
             dic_vals[subject] = copy.deepcopy(total_samples[subject])
-
 
     dic_trains_count = count(dic_trains)
     dic_vals_count = count(dic_vals)
@@ -114,10 +175,13 @@ def generate_single_data() :
         'y' : train_y_list
     }
 
-    train_save_path = os.path.join(PATH_DATA, 'va_train_list.pickle')
+    train_data = filtering_invalid(train_data)
+
+    train_save_path = os.path.join(PATH_DATA, 'va_train_single.pickle')
 
     with open(train_save_path, 'wb') as f :
         pickle.dump(train_data, f)
+        print("Total {} samples are generated".format(len(train_data['x'])))
 
 
     print('Validation data')
@@ -131,10 +195,13 @@ def generate_single_data() :
         'y' : val_y_list
     }
 
-    val_save_path = os.path.join(PATH_DATA, 'va_val_list.pickle')
+    val_data = filtering_invalid(val_data)
+
+    val_save_path = os.path.join(PATH_DATA, 'va_val_single.pickle')
 
     with open(val_save_path, 'wb') as f :
         pickle.dump(val_data, f)
+        print("Total {} samples are generated".format(len(val_data['x'])))
 
 def switching(name, image, switch_images, switch_subjects) :
     if name in switch_subjects.keys():
@@ -260,19 +327,19 @@ def generate_sequential_data(window_size, stride) :
 
 
 
-if __name__ == "__main__" :
-    # generate_single_data()
+# if __name__ == "__main__" :
 
-    window_size = 3
-    stride = 10
-
-    generate_sequential_data(window_size, stride)
-
-    # path = os.path.join(PATH_DATA, 'annotations', 'VA_Set', '**', '327' + '.txt')
-    # print(glob.glob(path))
-    # path = glob.glob(path)[0]
-    # print(path)
-    # list_labels = read_txt(path)
+    # if args.mode == 'test' :
     #
-    # print(len(list_labels))
-    # print(list_labels[-1])
+    #     if args.type == 'sequence':
+    #
+    # elif args.mode == 'train' :
+    #     if args.type == 'single' :
+    #         generate_single_train()
+    #     elif args.type == 'sequence' :
+    #         generate_sequential_data(WINDOW_SIZE, STRIDE)
+    #     else :
+    #         print("Type variable is not valid")
+    #
+    # else :
+    #     print("Mode variable is not valid")

@@ -28,8 +28,8 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',
                     help='Enter the server environment to be trained on')
-parser.add_argument('--mode', default='write_seq',
-                    help='Enter the desired mode')
+parser.add_argument('--type', default='val',
+                    help='Enter the desired type, val or test')
 
 args = parser.parse_args()
 
@@ -236,6 +236,154 @@ def write_sequence(type='val') :
 
             f.close()
 
+def get_postprocessing(name, img_name, keep, both, zero, m5, prior_valence, prior_arousal) :
+    if name in keep :
+        if prior_valence == -10 :
+            return -1
+        else :
+            return prior_valence, prior_arousal
+
+    elif name in zero :
+        return 0.0, 0.0
+
+    elif name in m5 :
+        return -5.0, -5.0
+
+    elif name in both.keys() :
+        if img_name in both['name'] :
+            return 0.0, 0.0
+        else :
+            if prior_valence == -10:
+                return -1
+            else:
+                return prior_valence, prior_arousal
+
+    else :
+        return -1
+
+
+
+def write_submit() :
+    base_dir = os.path.join(PATH_DATA, 'test_images_for_demo')
+    if not os.path.isdir(base_dir):
+        print("You need the image, please download the 'test_images_for_demo'.")
+        return -1
+
+    list_tests = read_csv(os.path.join(PATH_DATA, 'va_test_set.csv'))
+
+    # post-processing
+    post_dir = os.path.join(base_dir, 'post_processing_pickles')
+
+    keep = read_pickle(os.path.join(post_dir, 'keep_past_value.pickle'))
+    both = read_pickle(os.path.join(post_dir, 'values_both_0_and_keep.pickle'))
+    zero = read_pickle(os.path.join(post_dir, 'values_to_0.pickle'))
+    m5 = read_pickle(os.path.join(post_dir, 'values_to_m5.pickle'))
+
+    # SAVE PATH setting
+    if MODEL_KEY == 'CAPNet' :
+        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'test', MODEL_KEY + '_' + str(NUM_SEQ_IMAGE))
+    else :
+        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'test', MODEL_KEY)
+
+    if not os.path.isdir(SAVE_PATH) :
+        os.mkdir(SAVE_PATH)
+
+    for i, name in enumerate(list_tests):
+
+        save_file_path = os.path.join(SAVE_PATH, name + ".txt")
+
+        if "_" in name:
+            if name.split('_')[-1] == 'right' or name.split('_')[-1] == 'left':
+                video_pos = os.path.join(PATH_DATA, 'videos', '_'.join(name.split('_')[:-1]) + '.*')
+            else:
+                video_pos = os.path.join(PATH_DATA, 'videos', name + '.*')
+        else:
+            video_pos = os.path.join(PATH_DATA, 'videos', name + '.*')
+
+        if not len(glob.glob(video_pos)) == 1:
+            print("Video path is not vaild : {}".format(name))
+            return -1
+
+        cap = cv2.VideoCapture(video_pos)
+        total_len = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+        f = open(save_file_path, "w")
+        content = "valence,arousal\n"
+        f.write(content)
+
+        count = 0
+        valence, arousal = -10, -10
+        for i in range(int(total_len)):
+            print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
+
+            image_path = os.path.join(base_dir, 'cropped', name, '{:0>5}'.format(i+1) + '.jpg')
+
+            if not os.path.isfile(image_path) :
+                if count == 0 :
+                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(i+1) + '.jpg', keep, both, zero, m5, valence, arousal)
+
+                    content = "{},{}\n".format(valence, arousal)
+                    f.write(content)
+
+                else :
+                    predicts = MODEL(xs)
+
+                    for p in range(len(predicts)):
+                        valence = predicts[p][0]
+                        arousal = predicts[p][1]
+
+                        content = "{},{}\n".format(valence, arousal)
+                        f.write(content)
+
+                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(i + 1) + '.jpg', keep, both, zero, m5, valence, arousal)
+
+                    content = "{},{}\n".format(valence, arousal)
+                    f.write(content)
+
+
+                    count = 0
+
+            else :
+                x = load_image(image_path, INPUT_IMAGE_SIZE)
+                x = tf.expand_dims(x, axis = 0)
+
+                if count == 0 :
+                    xs = x
+                    count += 1
+                else :
+                    xs = tf.concat([xs, x], axis = 0)
+                    count += 1
+
+                if len(xs) < BATCH_SIZE :
+                    if i == (int(total_len) - 1) :
+                        predicts = MODEL(xs)
+
+                        for p in range(len(predicts)):
+                            valence = predicts[p][0]
+                            arousal = predicts[p][1]
+
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+
+                        count = 0
+
+                    else :
+                        continue
+
+                else :
+                    predicts = MODEL(xs)
+
+                    for p in range(len(predicts)) :
+                        valence = predicts[p][0]
+                        arousal = predicts[p][1]
+
+                        content = "{},{}\n".format(valence, arousal)
+                        f.write(content)
+
+                    count = 0
+
+        f.close()
+
 def write_txt(type='val') :
     file_path = os.path.join(PATH_DATA, 'va_{}_set.csv'.format(type))
     if not os.path.isfile(file_path) :
@@ -247,7 +395,7 @@ def write_txt(type='val') :
         weights_tag = PATH_WEIGHT.split('\\')[-2]
     else :
         weights_tag = PATH_WEIGHT.split('/')[-2]
-    # tm = time.localtime(time.time())
+
     SAVE_PATH = os.path.join(os.getcwd(),
                              'results',
                              'evaluation',
@@ -389,14 +537,14 @@ def write_txt(type='val') :
 
 
 if __name__ == "__main__" :
-    if args.mode == 'write' :
-        write_txt()
-    elif args.mode == 'write_seq' :
-        write_sequence()
-    elif args.mode == 'write_submit' :
-        write_txt(tpye='test')
-    elif args.mode == 'write_seq_submit' :
-        write_sequence(tpye='test')
+    if MODEL_KEY == 'FER-Tuned' :
+        if args.type == 'val' :
+            write_txt()
+        elif args.type == 'test' :
+            write_submit()
+
+    elif MODEL_KEY == 'CAPNet' :
+        write_sequence(type=args.type)
     else :
         print('Mode parser is not valid')
 

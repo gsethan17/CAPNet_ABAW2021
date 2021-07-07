@@ -230,7 +230,7 @@ def get_sequence_test(subject_name) :
 
     base_dir = os.path.join(PATH_DATA, 'test_images_for_demo')
 
-    for i in range(total_len) :
+    for i in range(int(total_len)) :
         if i >= FPS * WINDOW_SIZE:
 
             # get images

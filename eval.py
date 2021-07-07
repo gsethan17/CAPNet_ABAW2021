@@ -437,7 +437,7 @@ def write_submit_sequence() :
 
         count = 0
         for j in range(int(total_len)):
-            print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), j, int(total_len)))
+            print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), j, int(total_len)), end='\r')
 
             try :
                 idx = data['i'].index([name, j])

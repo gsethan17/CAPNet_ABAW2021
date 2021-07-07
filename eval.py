@@ -74,8 +74,6 @@ else :
 
 ## evaluation setting
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])
-SHUFFLE = config['TRAIN'].getboolean('SHUFFLE')
-METRIC = metric_CCC
 
 def switching(name, image, switch_images, switch_subjects) :
     if name in switch_subjects.keys():
@@ -545,6 +543,7 @@ if __name__ == "__main__" :
         if args.type == 'val' :
             write_txt()
         elif args.type == 'test' :
+            print('aaa')
             write_submit()
 
     elif MODEL_KEY == 'CAPNet' :

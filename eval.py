@@ -290,7 +290,7 @@ def write_submit() :
         SAVE_PATH = os.path.join(os.getcwd(), 'results', 'test', MODEL_KEY)
 
     if not os.path.isdir(SAVE_PATH) :
-        os.mkdir(SAVE_PATH)
+        os.makedirs(SAVE_PATH)
 
     for i, name in enumerate(list_tests):
 

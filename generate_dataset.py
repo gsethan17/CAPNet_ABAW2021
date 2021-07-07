@@ -110,7 +110,7 @@ def filtering_topfull(dic) :
                 count += 1
 
 
-        if count == (FPS * WINDOW_SIZE // STRIDE) + 1
+        if count == (FPS * WINDOW_SIZE // STRIDE) + 1 :
             lists.append(i)
 
     print("{} invalid data is detected".format(len(lists)))

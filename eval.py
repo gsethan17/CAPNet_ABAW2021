@@ -440,7 +440,7 @@ def write_submit_sequence() :
             print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), j, int(total_len)), end='\r')
 
             try :
-                idx = data['i'].index([name, i])
+                idx = data['i'].index([name, j])
             except :
                 idx = -1
 

@@ -239,6 +239,7 @@ def write_sequence(type='val') :
             f.close()
 
 def get_postprocessing(name, img_name, keep, both, zero, m5, prior_valence, prior_arousal) :
+    print(prior_valence, prior_arousal)
     if name in keep :
         if prior_valence == -10 :
             return -1

@@ -103,15 +103,11 @@ def filtering_invalid(dic) :
 def filtering_topfull(dic) :
     lists = []
     for i in range(len(dic['x'])) :
-        count = 0
         for j, image_path in enumerate(dic['x'][i]) :
             image = image_path.split('/')[1].split('.')[0]
             if image == "" :
-                count += 1
-
-
-        if count == (FPS * WINDOW_SIZE // STRIDE) + 1 :
-            lists.append(i)
+                lists.append(i)
+                break
 
     print("{} invalid data is detected".format(len(lists)))
 

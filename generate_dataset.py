@@ -229,6 +229,9 @@ def get_sequence_test(subject_name) :
     total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
 
     base_dir = os.path.join(PATH_DATA, 'test_images_for_demo')
+    if not os.path.isdir(base_dir):
+        print("You need the image, please download the 'test_images_for_demo'.")
+        return -1
 
     for i in range(int(total_len)) :
         if i >= FPS * WINDOW_SIZE:

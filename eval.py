@@ -156,7 +156,6 @@ def write_sequence(type='val') :
             count = 0
             for i in range(int(total_len)):
                 print("{:>5} / {:>5} || {:>5} / {:>5}".format(v + 1, len(video_list), i, int(total_len)), end='\r')
-                print((video_name, i), end='')
 
                 # for d in range(len(idx_list)) :
                 #     if idx_list[d][1] == i :
@@ -283,10 +282,7 @@ def write_submit() :
     m5 = read_pickle(os.path.join(post_dir, 'values_to_m5.pickle'))
 
     # SAVE PATH setting
-    if MODEL_KEY == 'CAPNet' :
-        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', 'Test-Set', MODEL_KEY + '_' + str(NUM_SEQ_IMAGE))
-    else :
-        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', 'Test-Set', MODEL_KEY)
+    SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', 'Test-Set', MODEL_KEY)
 
     if not os.path.isdir(SAVE_PATH) :
         os.makedirs(SAVE_PATH)
@@ -382,6 +378,132 @@ def write_submit() :
                     for p in range(len(predicts)) :
                         valence = predicts[p][0]
                         arousal = predicts[p][1]
+
+                        content = "{},{}\n".format(valence, arousal)
+                        f.write(content)
+
+                    count = 0
+
+        f.close()
+
+def write_submit_sequence() :
+    file_path = os.path.join(PATH_DATA, 'va_test_set.csv')
+    if not os.path.isfile(file_path):
+        print("type variable is not valid")
+        return -1
+
+    base_dir = os.path.join(PATH_DATA, 'test_images_for_demo', 'cropped')
+    if not os.path.isdir(base_dir):
+        print("You need the image, please download the 'test_images_for_demo'.")
+        return -1
+
+    # SAVE PATH setting
+    SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', 'Test-Set', MODEL_KEY + '_' + str(NUM_SEQ_IMAGE))
+
+    if not os.path.isdir(SAVE_PATH):
+        os.makedirs(SAVE_PATH)
+
+
+    # load dataset
+    data = read_pickle(os.path.join(PATH_DATA, 'va_test_seq_list.pickle'))
+
+    list_tests = read_csv(file_path)
+
+
+    for i, name in enumerate(list_tests):
+        save_file_path = os.path.join(SAVE_PATH, name + ".txt")
+
+        if "_" in name:
+            if name.split('_')[-1] == 'right' or name.split('_')[-1] == 'left':
+                video_pos = os.path.join(PATH_DATA, 'videos', '_'.join(name.split('_')[:-1]) + '.*')
+            else:
+                video_pos = os.path.join(PATH_DATA, 'videos', name + '.*')
+        else:
+            video_pos = os.path.join(PATH_DATA, 'videos', name + '.*')
+
+        if not len(glob.glob(video_pos)) == 1:
+            print("Video path is not vaild : {}".format(name))
+            return -1
+
+        video_path = glob.glob(video_pos)[0]
+
+        # count total number of frame
+        capture = cv2.VideoCapture(video_path)
+        total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+
+        f = open(save_file_path, "w")
+        content = "valence,arousal\n"
+        f.write(content)
+
+        count = 0
+        for j in range(int(total_len)):
+            print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), j, int(total_len)), end='\r')
+
+            try :
+                idx = data['i'].index([name, i])
+            except :
+                idx = -1
+
+            if idx == -1 :
+
+                if count == 0 :
+                    valence = -5
+                    arousal = -5
+
+                    content = "{},{}\n".format(valence, arousal)
+                    f.write(content)
+
+                else :
+                    predicts = MODEL(xs)
+
+                    for i in range(len(predicts)):
+                        valence = predicts[i][0]
+                        arousal = predicts[i][1]
+
+                        content = "{},{}\n".format(valence, arousal)
+                        f.write(content)
+
+                    valence = -5
+                    arousal = -5
+
+                    content = "{},{}\n".format(valence, arousal)
+                    f.write(content)
+
+                    count = 0
+
+            else:
+                x = [load_image(os.path.join(IMAGE_PATH, file_name), INPUT_IMAGE_SIZE) for file_name in data['x'][idx][10 - NUM_SEQ_IMAGE:]]
+                x = tf.expand_dims(x, axis=0)
+
+                if count == 0:
+                    xs = x
+                    count += 1
+                else:
+                    xs = tf.concat([xs, x], axis=0)
+                    count += 1
+
+                if len(xs) < BATCH_SIZE:
+                    if i == (int(total_len) - 1):
+                        predicts = MODEL(xs)
+
+                        for i in range(len(predicts)):
+                            valence = predicts[i][0]
+                            arousal = predicts[i][1]
+
+                            content = "{},{}\n".format(valence, arousal)
+                            f.write(content)
+
+                        count = 0
+
+                    else:
+                        continue
+
+                else:
+                    predicts = MODEL(xs)
+
+                    for i in range(len(predicts)):
+                        valence = predicts[i][0]
+                        arousal = predicts[i][1]
 
                         content = "{},{}\n".format(valence, arousal)
                         f.write(content)
@@ -550,7 +672,10 @@ if __name__ == "__main__" :
             write_submit()
 
     elif MODEL_KEY == 'CAPNet' :
-        write_sequence(type=args.type)
+        if args.type == 'val':
+            write_sequence(type=args.type)
+        elif args.type == 'test' :
+            write_submit_sequence()
     else :
         print('Mode parser is not valid')
 

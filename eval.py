@@ -283,9 +283,9 @@ def write_submit() :
 
     # SAVE PATH setting
     if MODEL_KEY == 'CAPNet' :
-        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'test', MODEL_KEY + '_' + str(NUM_SEQ_IMAGE))
+        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', 'Test-Set', MODEL_KEY + '_' + str(NUM_SEQ_IMAGE))
     else :
-        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'test', MODEL_KEY)
+        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', 'Test-Set', MODEL_KEY)
 
     if not os.path.isdir(SAVE_PATH) :
         os.makedirs(SAVE_PATH)
@@ -315,6 +315,7 @@ def write_submit() :
 
         count = 0
         valence, arousal = -10, -10
+        print('Evaluation start...')
         for i in range(int(total_len)):
             print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
 
@@ -543,7 +544,6 @@ if __name__ == "__main__" :
         if args.type == 'val' :
             write_txt()
         elif args.type == 'test' :
-            print('aaa')
             write_submit()
 
     elif MODEL_KEY == 'CAPNet' :

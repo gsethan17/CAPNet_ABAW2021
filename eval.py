@@ -292,7 +292,6 @@ def write_submit() :
         os.makedirs(SAVE_PATH)
 
     for i, name in enumerate(list_tests):
-        print(name)
         save_file_path = os.path.join(SAVE_PATH, name + ".txt")
 
         if "_" in name:
@@ -307,8 +306,11 @@ def write_submit() :
             print("Video path is not vaild : {}".format(name))
             return -1
 
-        cap = cv2.VideoCapture(video_pos)
-        total_len = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        video_path = glob.glob(video_pos)[0]
+
+        # count total number of frame
+        capture = cv2.VideoCapture(video_path)
+        total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
 
         f = open(save_file_path, "w")
         content = "valence,arousal\n"
@@ -316,7 +318,6 @@ def write_submit() :
 
         count = 0
         valence, arousal = -10, -10
-        print(total_len)
         for i in range(int(total_len)):
             print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
 

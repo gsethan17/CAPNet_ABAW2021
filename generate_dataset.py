@@ -93,7 +93,7 @@ def filtering_invalid(dic) :
     print("{} invalid data is detected".format(len(lists)))
 
     lists.reverse()
-    for j in range(lists) :
+    for j in lists :
         keys = dic.keys()
         for key in keys :
             dic[key].pop(j)
@@ -116,7 +116,7 @@ def filtering_topfull(dic) :
     print("{} invalid data is detected".format(len(lists)))
 
     lists.reverse()
-    for j in range(lists) :
+    for j in lists :
         keys = dic.keys()
         for key in keys :
             dic[key].pop(j)

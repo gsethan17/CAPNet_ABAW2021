@@ -72,11 +72,16 @@ LOSS = loss_ccc
 METRIC = metric_CCC
 
 ### Model load to global variable
-MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
-                  weight_path=PATH_WEIGHT,
-                  input_size = INPUT_IMAGE_SIZE,
-                  dropout_rate=DROPOUT_RATE,
-                  num_seq_image = NUM_SEQ_IMAGE)
+if MODEL_KEY == 'CAPNet' :
+    MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
+                      weight_path=PATH_WEIGHT,
+                      input_size=INPUT_IMAGE_SIZE,
+                      dropout_rate=DROPOUT_RATE,
+                      num_seq_image=NUM_SEQ_IMAGE)
+else :
+    MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
+                      weight_path=PATH_WEIGHT,
+                      input_size=INPUT_IMAGE_SIZE,)
 
 ## start time setting
 tm = time.localtime(time.time())

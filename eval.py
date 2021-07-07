@@ -62,11 +62,15 @@ if MODEL_KEY == 'CAPNet' :
 
 
 ### Model load to global variable
-MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
-                  weight_path=PATH_WEIGHT,
-                  input_size = INPUT_IMAGE_SIZE,
-                  num_seq_image = NUM_SEQ_IMAGE)
-
+if MODEL_KEY == 'CAPNet' :
+    MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
+                      weight_path=PATH_WEIGHT,
+                      input_size = INPUT_IMAGE_SIZE,
+                      num_seq_image = NUM_SEQ_IMAGE)
+else :
+    MODEL = get_model(key=MODEL_KEY, preTrained=PRETRAINED,
+                      weight_path=PATH_WEIGHT,
+                      input_size=INPUT_IMAGE_SIZE,)
 
 ## evaluation setting
 BATCH_SIZE = int(config['TRAIN']['BATCH_SIZE'])

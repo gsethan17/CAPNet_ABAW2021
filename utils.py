@@ -100,6 +100,8 @@ def get_model(key='FER-Tuned', preTrained = True, weight_path=os.path.join(os.ge
         model.layers[-1].trainable = True
         model.layers[-2].trainable = True
 
+    return model
+
 def load_image(filename, image_size):
     # print(filename)
     try :

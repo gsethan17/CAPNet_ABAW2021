@@ -302,6 +302,8 @@ def write_submit(type='test') :
         os.makedirs(SAVE_PATH)
 
     for i, name in enumerate(list_tests):
+        if not name == '107-30-640x480' :
+            continue
         save_file_path = os.path.join(SAVE_PATH, name + ".txt")
 
         if "_" in name:

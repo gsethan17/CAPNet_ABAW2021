@@ -328,13 +328,13 @@ def write_submit(type='test') :
 
         count = 0
         valence, arousal = -10, -10
-        for i in range(int(total_len)):
-            print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
+        for j in range(int(total_len)):
+            print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), j, int(total_len)), end='\r')
 
-            image_path = os.path.join(base_dir, 'cropped', name, '{:0>5}'.format(i+1) + '.jpg')
+            image_path = os.path.join(base_dir, 'cropped', name, '{:0>5}'.format(j+1) + '.jpg')
             if not os.path.isfile(image_path) :
                 if count == 0 :
-                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(i+1) + '.jpg', pp, valence, arousal)
+                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(j+1) + '.jpg', pp, valence, arousal)
 
                     content = "{},{}\n".format(valence, arousal)
                     f.write(content)
@@ -349,7 +349,7 @@ def write_submit(type='test') :
                         content = "{},{}\n".format(valence, arousal)
                         f.write(content)
 
-                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(i + 1) + '.jpg', pp, valence, arousal)
+                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(j + 1) + '.jpg', pp, valence, arousal)
 
                     content = "{},{}\n".format(valence, arousal)
                     f.write(content)

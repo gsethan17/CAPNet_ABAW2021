@@ -289,7 +289,7 @@ def write_submit(type='test') :
             pp[pp_name] = read_pickle(os.path.join(post_dir, pp_file))
         else :
             pp[pp_name] = []
-            print("There is no file : ", pp_files)
+            print("There is no file : ", pp_file)
 
 
     # SAVE PATH setting

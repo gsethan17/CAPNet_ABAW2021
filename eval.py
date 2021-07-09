@@ -323,6 +323,7 @@ def write_submit(type='test') :
         # count total number of frame
         capture = cv2.VideoCapture(video_path)
         total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+        print("total length", total_len)
 
         f = open(save_file_path, "w")
         content = "valence,arousal\n"

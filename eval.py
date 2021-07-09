@@ -371,7 +371,8 @@ def write_submit(type='test') :
                 else :
                     xs = tf.concat([xs, x], axis = 0)
                     count += 1
-
+                print(i)
+                print(len(xs), BATCH_SIZE)
                 if len(xs) < BATCH_SIZE :
                     if i == (int(total_len) - 1) :
                         print(x.shape)

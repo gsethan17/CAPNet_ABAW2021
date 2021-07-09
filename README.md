@@ -64,7 +64,7 @@ Please refer to the `README` among the extracted files for the details.
         ```
         To generate prediction results :  
         ```
-        python eval.py --type val
+        python eval.py
         ```  
         To calculate the concordance correlation coefficient (CCC) value :  
         ```
@@ -73,22 +73,23 @@ Please refer to the `README` among the extracted files for the details.
 
     2. CAPNet test (past sequence image)  
     Please set the `MODEL_KEY` and `WINDOW_SIZE` on `config.ini` before the test.  
+    The `WINDOW_SIZE` can be selected between 1, 2, and 3 seconds.  
         ```
         WINDOW_SIZE = 3
         MODEL_KEY = CAPNet
         ```
         To generate sequential dataset for test :
         ```
-        python generate_dataset.py --mode sequence --type val
+        python generate_dataset.py
         ```
         To generate prediction results :
         ```
-        python eval.py --type val
+        python eval.py
         ```
         To merge with FER-Tuned prediction results to fill in the blank that occur when there are insufficient sequential images :
         ```
         python utils.py --mode merge --path1 [Path of prediction] --path2 [Path of FER-Tuned]
-        ```   
+        ```
         To calculate the concordance correlation coefficient (CCC) value :
         ```
         python utils.py --mode compare --path1 [Path of prediction]

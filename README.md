@@ -23,6 +23,12 @@ CAPNet_ABAW2021
 `-- |-- FER-Tuned
 ```
 
+## Dependency
+to install all dependencies for demo test  
+```
+pip install -r requirements.txt
+```
+
 ## Demo test
 with test set of Aff-Wild2
 1. Please download the Aff-Wild2 dataset and write the download location in `PATH_DATA` of `config.ini`.  

@@ -2,7 +2,7 @@
 This is the repository containing the solution for ICCV-2021 ABAW Competition
 
 # Pre-trained weights Download
-
+[Download link for weights](https://www.dropbox.com/sh/u6w2yx8p36eggfc/AACxgZ72RHA6zIdywN83mBxea?dl=0)  
 placement
 ```
 |-- weights

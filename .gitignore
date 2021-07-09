@@ -130,6 +130,7 @@ dmypy.json
 
 # Weights folder
 FER_model/ResNeXt34_Parallel_add/
+weights/
 
 # data folder
 data_guide/

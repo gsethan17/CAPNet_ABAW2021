@@ -1,4 +1,4 @@
-from utils import get_model, metric_CCC, read_pickle, Dataloader, read_csv, load_image, read_txt, CCC_score_np
+from utils import get_model, read_pickle, read_csv, load_image
 import tensorflow as tf
 import os
 import argparse

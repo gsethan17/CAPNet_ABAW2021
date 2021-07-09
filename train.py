@@ -1,4 +1,4 @@
-from utils import get_model, loss_ccc, metric_CCC, read_csv, read_pickle, Dataloader, Dataloader_td, Dataloader_sequential, Dataloader_audio
+from utils import get_model, loss_ccc, metric_CCC, read_pickle, Dataloader, Dataloader_sequential
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 import pandas as pd
@@ -7,7 +7,7 @@ import time
 import argparse
 import configparser
 
-
+'''
 ################### Limit GPU Memory ###################
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print("########################################")
@@ -24,7 +24,7 @@ if gpus :
 else :
     print('GPU is not available')
 ##########################################################
-
+'''
 
 # Basic configuration
 parser = argparse.ArgumentParser()

@@ -302,8 +302,6 @@ def write_submit(type='test') :
         os.makedirs(SAVE_PATH)
 
     for i, name in enumerate(list_tests):
-        if not name == '107-30-640x480' :
-            continue
         save_file_path = os.path.join(SAVE_PATH, name + ".txt")
 
         if "_" in name:
@@ -323,7 +321,6 @@ def write_submit(type='test') :
         # count total number of frame
         capture = cv2.VideoCapture(video_path)
         total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
-        print("total length", total_len)
 
         f = open(save_file_path, "w")
         content = "valence,arousal\n"
@@ -361,7 +358,6 @@ def write_submit(type='test') :
                     count = 0
 
             else :
-                print(image_path)
                 x = load_image(image_path, INPUT_IMAGE_SIZE)
                 x = tf.expand_dims(x, axis = 0)
 
@@ -371,11 +367,9 @@ def write_submit(type='test') :
                 else :
                     xs = tf.concat([xs, x], axis = 0)
                     count += 1
-                print(j)
-                print(len(xs), BATCH_SIZE)
+
                 if len(xs) < BATCH_SIZE :
                     if j == (int(total_len) - 1) :
-                        print(x.shape)
                         predicts = MODEL(xs)
 
                         for p in range(len(predicts)):

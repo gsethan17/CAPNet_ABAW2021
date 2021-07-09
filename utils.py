@@ -221,68 +221,6 @@ def metric_CCC(x, y):
     # total_ccc = tf.math.reduce_mean(items)
     return cccs
 
-# Fill in the blank
-def fib(path, zero=False) :
-    file_list = os.path.join(path, '*.txt')
-    file_lists = glob.glob(file_list)
-    # file_list = os.listdir(path)
-
-    if zero :
-        save_path = os.path.join(path, 'fib0')
-    else :
-        save_path = os.path.join(path, 'fib')
-
-    if not os.path.isdir(save_path):
-        os.makedirs(save_path)
-
-    for file_path in file_lists :
-        sub_flag = False
-        file = os.path.basename(file_path)
-        txt_list = read_txt(file_path)
-        save_file_path = os.path.join(save_path, file)
-
-        flag = False
-
-        if file.split('.')[0].split('_')[-1] == 'right' or file.split('.')[0].split('_')[-1] == 'left' :
-            sub_flag = True
-
-        for i, txt in enumerate(txt_list) :
-            if i > 0 :
-                line = [float(x) for x in txt]
-                v = line[0]
-                a = line[1]
-
-                if v == -5 or a == -5 :
-                    if not flag :
-                        if sub_flag :
-                            content = "{},{}\n".format(v, a)
-                            f.write(content)
-                        else :
-                            content = "{},{}\n".format(0.0, 0.0)
-                            f.write(content)
-                    else :
-                        if zero :
-                            content = "{},{}\n".format(0.0, 0.0)
-                            f.write(content)
-                        else :
-                            content = "{},{}\n".format(v_pre, a_pre)
-                            f.write(content)
-                else :
-                    content = "{},{}\n".format(v, a)
-                    f.write(content)
-
-                    v_pre = v
-                    a_pre = a
-
-                    flag = True
-
-            else :
-                f = open(save_file_path, "w")
-                content = "valence,arousal\n"
-                f.write(content)
-
-        f.close()
-
 def compare(path) :
     prediction_path = os.path.join(path, '*.txt')
     prediction_lists = glob.glob(prediction_path)
@@ -381,21 +319,17 @@ if __name__ == '__main__' :
 
     parser.add_argument('--mode', default='compare',
                         help='Enter the desired mode')
-    parser.add_argument('--location', default='205',
-                        help='Enter the server environment to be trained on')
 
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
     config.read('./config.ini')
 
-    PATH_DATA = config[args.location]['PATH_DATA']
+    PATH_DATA = config['PATH']['PATH_DATA']
 
     if args.mode == 'compare' :
         compare(args.path1)
-    elif args.mode == 'fib' :
-        fib(args.path1, zero = False)
-    elif args.mode == 'fib0':
-        fib(args.path1, zero = True)
     elif args.mode == 'merge' :
         merge(args.path1, args.path2)
+    else :
+        print('Mode parser is invalid.')

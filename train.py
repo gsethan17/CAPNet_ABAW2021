@@ -4,43 +4,17 @@ from tensorflow.keras.optimizers import Adam
 import pandas as pd
 import os
 import time
-import argparse
 import configparser
 
-'''
-################### Limit GPU Memory ###################
-gpus = tf.config.experimental.list_physical_devices('GPU')
-print("########################################")
-print('{} GPU(s) is(are) available'.format(len(gpus)))
-print("########################################")
-# set the only one GPU and memory limit
-memory_limit = 1024*9
-if gpus :
-    try :
-        tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit = memory_limit)])
-        print("Use only one GPU{} limited {}MB memory".format(gpus[0], memory_limit))
-    except RuntimeError as e :
-        print(e)
-else :
-    print('GPU is not available')
-##########################################################
-'''
 
 # Basic configuration
-parser = argparse.ArgumentParser()
-parser.add_argument('--location', default='205',
-                    help='Enter the server environment to be trained on')
-args = parser.parse_args()
-
-args.location
-
 config = configparser.ConfigParser()
 config.read('./config.ini')
 
 ## path setting
-PATH_DATA = config[args.location]['PATH_DATA']
-PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
-PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
+PATH_DATA = config['PATH']['PATH_DATA']
+PATH_DATA_GUIDE = config['PATH']['PATH_DATA_GUIDE']
+PATH_WEIGHT = config['PATH']['PATH_WEIGHT']
 IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
 TRAIN_DATA_PATH = os.path.join(PATH_DATA, 'va_train_latest.pickle')
 VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')

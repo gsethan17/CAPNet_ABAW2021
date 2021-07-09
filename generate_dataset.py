@@ -10,8 +10,6 @@ import cv2
 
 # Basic configuration
 parser = argparse.ArgumentParser()
-parser.add_argument('--location', default='205',
-                    help='Enter the server environment to be trained on')
 parser.add_argument('--type', default='test',
                         help='Enter the desired type, train or test')
 parser.add_argument('--mode', default='sequence',
@@ -22,9 +20,9 @@ args = parser.parse_args()
 config = configparser.ConfigParser()
 config.read('./config.ini')
 
-PATH_DATA = config[args.location]['PATH_DATA']
-PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
-PATH_SWITCH_INFO = config[args.location]['PATH_SWITCH_INFO']
+PATH_DATA = config['PATH']['PATH_DATA']
+PATH_DATA_GUIDE = config['PATH']['PATH_DATA_GUIDE']
+PATH_SWITCH_INFO = config['PATH']['PATH_SWITCH_INFO']
 
 # WINDOW_SIZE = int(config['INPUT']['WINDOW_SIZE'])
 WINDOW_SIZE = 3

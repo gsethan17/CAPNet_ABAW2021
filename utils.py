@@ -355,6 +355,7 @@ def merge(path1, path2) :
         f.write(content)
 
         for j in range(len(prediction1) - 1):
+            print(prediction_list, j)
             cur = [float(x) for x in prediction1[(j + 1)]]
             ref = [float(x) for x in prediction2[(j + 1)]]
 

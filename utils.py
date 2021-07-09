@@ -293,6 +293,8 @@ def compare(path) :
         name = os.path.basename(prediction_list)
         predictions = read_txt(prediction_list)
 
+        print(name)
+
         if name == 'video58.txt' :
             continue
 

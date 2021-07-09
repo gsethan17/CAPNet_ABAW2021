@@ -50,14 +50,14 @@ Please refer to the `README` among the extracted files for the details.
     (1) FER-Tuned test (current single image)  
     Please set the `config.ini` before the test.  
     ```python eval.py --location 231 --type val```  
-    ```python utils.py --location 231 --mode compare --path1 [Path of prediction] --path2 [Path of groundtruth]```  
+    ```python utils.py --location 231 --mode compare --path1 [Path of prediction]```  
 
     (2) CAPNet test (past sequence image)  
     Please set the `config.ini` before the test.  
     ```python generate_dataset.py --location 231 --mode sequence --type val```  
     ```python eval.py --location 231 --type val```  
     ```python utils.py --location 231 --mode merge --path1 [Path of prediction] --path2 [Path of FER-Tuned]```   
-    ```python utils.py --location 231 --mode compare --path1 [Path of prediction] --path2 [Path of groundtruth]```
+    ```python utils.py --location 231 --mode compare --path1 [Path of prediction]```
     
 4. Results 
 ```

@@ -22,6 +22,7 @@ placement
 `videos` is provided by [Aff-Wild2](https://ibug.doc.ic.ac.uk/resources/aff-wild2/)
 ```
 PATH_DATA
+|-- va_test_set.csv
 |-- videos
 |-- test_images_for_demo
 `-- |-- cropped

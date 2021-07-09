@@ -64,11 +64,11 @@ Please refer to the `README` among the extracted files for the details.
         ```
         To generate prediction results :  
         ```
-        python eval.py --location 231 --type val
+        python eval.py --type val
         ```  
         To calculate the concordance correlation coefficient (CCC) value :  
         ```
-        python utils.py --location 231 --mode compare --path1 [Path of prediction]
+        python utils.py --mode compare --path1 [Path of prediction]
         ```    
 
     2. CAPNet test (past sequence image)  
@@ -79,19 +79,19 @@ Please refer to the `README` among the extracted files for the details.
         ```
         To generate sequential dataset for test :
         ```
-        python generate_dataset.py --location 231 --mode sequence --type val
+        python generate_dataset.py --mode sequence --type val
         ```
         To generate prediction results :
         ```
-        python eval.py --location 231 --type val
+        python eval.py --type val
         ```
         To merge with FER-Tuned prediction results to fill in the blank that occur when there are insufficient sequential images :
         ```
-        python utils.py --location 231 --mode merge --path1 [Path of prediction] --path2 [Path of FER-Tuned]
+        python utils.py --mode merge --path1 [Path of prediction] --path2 [Path of FER-Tuned]
         ```   
         To calculate the concordance correlation coefficient (CCC) value :
         ```
-        python utils.py --location 231 --mode compare --path1 [Path of prediction]
+        python utils.py --mode compare --path1 [Path of prediction]
         ```
     
 4. Results  
@@ -100,9 +100,12 @@ You can find the results of prediction on the position as follwoing :
     CAPNet_ABAW2021
     |-- results
     `-- |-- VA-Set
-    `-- |-- |-- Test-Set
-    `-- |-- |-- |-- CAPNet_1
-    `-- |-- |-- |-- CAPNet_2
-    `-- |-- |-- |-- CAPNet_3
-    `-- |-- |-- |-- FER-Tuned
+        `-- |-- Test-Set
+            `-- |-- CAPNet_1
+                `-- |-- merge
+            `-- |-- CAPNet_2
+                `-- |-- merge
+            `-- |-- CAPNet_3
+                `-- |-- merge
+            `-- |-- FER-Tuned
     ```

@@ -56,9 +56,11 @@ def get_model(key='FER-Tuned', preTrained = True, weight_path=os.path.join(os.ge
         # Base model load
         base_model = ResNet34(cardinality=32, se='parallel_add')
 
-        base_weights = os.path.join(os.getcwd(), 'results', '614_13_15_FER', 'best_weights')
+        base_weights = os.path.join(os.getcwd(), 'weigths', 'FER-Tuned', 'best_weights')
         assert len(glob.glob(base_weights + '*')) > 1, 'There is no weight file | {}'.format(base_weights)
         base_model.load_weights(base_weights)
+        print("The cnn architecture weights has been load")
+        print(base_weights)
 
 
         base_model.build(input_shape=(None, input_size[0], input_size[1], 3))

@@ -36,14 +36,6 @@ args = parser.parse_args()
 config = configparser.ConfigParser()
 config.read('./config.ini')
 
-## path setting
-PATH_DATA = config[args.location]['PATH_DATA']
-PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
-PATH_SWITCH_INFO = config[args.location]['PATH_SWITCH_INFO']
-PATH_WEIGHT = config[args.location]['PATH_WEIGHT']
-IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
-VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
-
 ## model setting
 MODEL_KEY = str(config['MODEL']['MODEL_KEY'])
 PRETRAINED = config['MODEL'].getboolean('PRETRAINED')
@@ -59,6 +51,19 @@ if MODEL_KEY == 'CAPNet' :
 
     # NUM_SEQ_IMAGE = int(config['INPUT']['NUM_SEQ_IMAGE'])
     NUM_SEQ_IMAGE = int(WINDOW_SIZE * FPS / STRIDE)
+
+## path setting
+PATH_DATA = config[args.location]['PATH_DATA']
+PATH_DATA_GUIDE = config[args.location]['PATH_DATA_GUIDE']
+PATH_SWITCH_INFO = config[args.location]['PATH_SWITCH_INFO']
+IMAGE_PATH = os.path.join(PATH_DATA, 'images', 'cropped')
+VAL_DATA_PATH = os.path.join(PATH_DATA, 'va_val_latest.pickle')
+
+if MODEL_KEY == 'CAPNet' :
+    PATH_WEIGHT = os.path.join(config[args.location]['PATH_WEIGHT'], MODEL_KEY + '_' + str(WINDOW_SIZE), 'best_weights')
+else:
+    PATH_WEIGHT = os.path.join(config[args.location]['PATH_WEIGHT'], MODEL_KEY, 'best_weights')
+
 
 
 ### Model load to global variable
@@ -237,22 +242,22 @@ def write_sequence(type='val') :
 
             f.close()
 
-def get_postprocessing(name, img_name, keep, both, zero, m5, prior_valence, prior_arousal) :
+def get_postprocessing(name, img_name, pp, prior_valence, prior_arousal) :
     print(prior_valence, prior_arousal)
-    if name in keep :
+    if name in pp['keep'] :
         if prior_valence == -10 :
             return -1
         else :
             return prior_valence, prior_arousal
 
-    elif name in zero :
+    elif name in pp['zero'] :
         return 0.0, 0.0
 
-    elif name in m5 :
+    elif name in pp['m5'] :
         return -5.0, -5.0
 
-    elif name in both.keys() :
-        if img_name in both[name] :
+    elif name in pp['both'].keys() :
+        if img_name in pp['both'][name] :
             return 0.0, 0.0
         else :
             if prior_valence == -10:
@@ -265,24 +270,34 @@ def get_postprocessing(name, img_name, keep, both, zero, m5, prior_valence, prio
 
 
 
-def write_submit() :
-    base_dir = os.path.join(PATH_DATA, 'test_images_for_demo')
+def write_submit(type='test') :
+    base_dir = os.path.join(PATH_DATA, '{}_images_for_demo'.format(type))
     if not os.path.isdir(base_dir):
         print("You need the image, please download the 'test_images_for_demo'.")
         return -1
 
-    list_tests = read_csv(os.path.join(PATH_DATA, 'va_test_set.csv'))
+    list_tests = read_csv(os.path.join(PATH_DATA, 'va_{}_set.csv'.format(type)))
 
     # post-processing
     post_dir = os.path.join(base_dir, 'post_processing_pickles')
+    pp_lists = ['keep', 'zero', 'both', 'm5']
+    pp_files = ['keep_past_value.pickle', 'values_to_0.pickle',
+                'values_both_0_and_keep.pickle', 'values_to_m5.pickle']
+    pp = {}
 
-    keep = read_pickle(os.path.join(post_dir, 'keep_past_value.pickle'))
-    both = read_pickle(os.path.join(post_dir, 'values_both_0_and_keep.pickle'))
-    zero = read_pickle(os.path.join(post_dir, 'values_to_0.pickle'))
-    m5 = read_pickle(os.path.join(post_dir, 'values_to_m5.pickle'))
+    for pp_name, pp_file in zip(pp_lists, pp_files) :
+        if os.path.isfile(os.path.join(post_dir, pp_file)) :
+            pp[pp_name] = read_pickle(os.path.join(post_dir, pp_file))
+        else :
+            pp[pp_name] = []
+            print("There is no file : ", pp_files)
+
 
     # SAVE PATH setting
-    SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', 'Test-Set', MODEL_KEY)
+    if MODEL_KEY == 'CAPNet' :
+        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', '{}-Set'.format(type.capitalize()), MODEL_KEY + '_' + str(WINDOW_SIZE))
+    else :
+        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', '{}-Set'.format(type.capitalize()), MODEL_KEY)
 
     if not os.path.isdir(SAVE_PATH) :
         os.makedirs(SAVE_PATH)
@@ -315,13 +330,13 @@ def write_submit() :
         count = 0
         valence, arousal = -10, -10
         for i in range(int(total_len)):
-            # print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
+            print("{:>5} / {:>5} || {:>5} / {:>5}".format(i + 1, len(list_tests), i, int(total_len)), end='\r')
 
             image_path = os.path.join(base_dir, 'cropped', name, '{:0>5}'.format(i+1) + '.jpg')
             if not os.path.isfile(image_path) :
                 print(image_path)
                 if count == 0 :
-                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(i+1) + '.jpg', keep, both, zero, m5, valence, arousal)
+                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(i+1) + '.jpg', pp, valence, arousal)
 
                     content = "{},{}\n".format(valence, arousal)
                     f.write(content)
@@ -336,7 +351,7 @@ def write_submit() :
                         content = "{},{}\n".format(valence, arousal)
                         f.write(content)
 
-                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(i + 1) + '.jpg', keep, both, zero, m5, valence, arousal)
+                    valence, arousal = get_postprocessing(name, '{:0>5}'.format(i + 1) + '.jpg', pp, valence, arousal)
 
                     content = "{},{}\n".format(valence, arousal)
                     f.write(content)
@@ -386,26 +401,30 @@ def write_submit() :
 
         f.close()
 
-def write_submit_sequence() :
-    file_path = os.path.join(PATH_DATA, 'va_test_set.csv')
+def write_submit_sequence(type='test') :
+    file_path = os.path.join(PATH_DATA, 'va_{}_set.csv'.format(type))
     if not os.path.isfile(file_path):
         print("type variable is not valid")
         return -1
 
-    base_dir = os.path.join(PATH_DATA, 'test_images_for_demo', 'cropped')
+    base_dir = os.path.join(PATH_DATA, '{}_images_for_demo'.format(type), 'cropped')
     if not os.path.isdir(base_dir):
         print("You need the image, please download the 'test_images_for_demo'.")
         return -1
 
     # SAVE PATH setting
-    SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', 'Test-Set', MODEL_KEY + '_' + str(NUM_SEQ_IMAGE))
+    if MODEL_KEY == 'CAPNet':
+        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', '{}-Set'.format(type.capitalize()),
+                                 MODEL_KEY + '_' + str(WINDOW_SIZE))
+    else:
+        SAVE_PATH = os.path.join(os.getcwd(), 'results', 'VA-Set', '{}-Set'.format(type.capitalize()), MODEL_KEY)
 
     if not os.path.isdir(SAVE_PATH):
         os.makedirs(SAVE_PATH)
 
 
     # load dataset
-    data = read_pickle(os.path.join(PATH_DATA, 'va_test_seq_list.pickle'))
+    data = read_pickle(os.path.join(PATH_DATA, 'va_{}_seq_list.pickle'.format(type)))
 
     list_tests = read_csv(file_path)
 
@@ -666,16 +685,11 @@ def write_txt(type='val') :
 
 if __name__ == "__main__" :
     if MODEL_KEY == 'FER-Tuned' :
-        if args.type == 'val' :
-            write_txt()
-        elif args.type == 'test' :
-            write_submit()
+        write_submit(type=args.type)
 
     elif MODEL_KEY == 'CAPNet' :
-        if args.type == 'val':
-            write_sequence(type=args.type)
-        elif args.type == 'test' :
-            write_submit_sequence()
+        write_sequence(type=args.type)
+
     else :
         print('Mode parser is not valid')
 

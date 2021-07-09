@@ -12,10 +12,10 @@ import cv2
 parser = argparse.ArgumentParser()
 parser.add_argument('--location', default='205',
                     help='Enter the server environment to be trained on')
-parser.add_argument('--mode', default='test',
-                        help='Enter the desired mode, train or test')
-parser.add_argument('--type', default='sequence',
-                        help='Enter the desired data type, single or sequence')
+parser.add_argument('--type', default='test',
+                        help='Enter the desired type, train or test')
+parser.add_argument('--mode', default='sequence',
+                        help='Enter the desired data mode, single or sequence')
 
 args = parser.parse_args()
 
@@ -203,7 +203,7 @@ def switching(name, image, switch_images, switch_subjects) :
 
     return object
 
-def get_sequence_test(subject_name) :
+def get_sequence_test(subject_name, type) :
     total_x = []
     total_idx = []
 
@@ -225,7 +225,7 @@ def get_sequence_test(subject_name) :
     capture = cv2.VideoCapture(video_path)
     total_len = capture.get(cv2.CAP_PROP_FRAME_COUNT)
 
-    base_dir = os.path.join(PATH_DATA, 'test_images_for_demo')
+    base_dir = os.path.join(PATH_DATA, '{}_images_for_demo'.format(type))
     if not os.path.isdir(base_dir):
         print("You need the image, please download the 'test_images_for_demo'.")
         return -1
@@ -330,17 +330,17 @@ def get_sequence_data(subject_name, images_list, switch_images, switch_subjects)
 
 
 def generate_sequential_data(type = 'test') :
-    if type == 'test' :
+    if type == 'test' or type == 'val' :
         # test data
         test_data = {
             'x': [],
             'i': []
         }
 
-        test_subject_lists = read_csv(os.path.join(PATH_DATA, 'va_test_set.csv'))
+        test_subject_lists = read_csv(os.path.join(PATH_DATA, 'va_{}_set.csv'.format(type)))
         for j, test_subject_list in enumerate(test_subject_lists):
 
-            test_x, test_idx = get_sequence_test(test_subject_list)
+            test_x, test_idx = get_sequence_test(test_subject_list, type)
 
             test_data['x'] += test_x
             test_data['i'] += test_idx
@@ -350,7 +350,7 @@ def generate_sequential_data(type = 'test') :
         test_data = filtering_topfull(test_data)
 
         if np.array(test_data['x']).shape[0] == np.array(test_data['i']).shape[0]:
-            with open(os.path.join(PATH_DATA, 'va_test_seq_list.pickle'), 'wb') as f:
+            with open(os.path.join(PATH_DATA, 'va_{}_seq_list.pickle'.format(type)), 'wb') as f:
                 pickle.dump(test_data, f)
 
 
@@ -417,14 +417,14 @@ def generate_sequential_data(type = 'test') :
 
 if __name__ == "__main__" :
 
-    if args.mode == 'test' :
-        if args.type == 'sequence':
-            generate_sequential_data()
+    if args.type == 'test' or args.type == 'val':
+        if args.mode == 'sequence':
+            generate_sequential_data(args.type)
 
-    elif args.mode == 'train' :
-        if args.type == 'single' :
+    elif args.type == 'train' :
+        if args.mode == 'single' :
             generate_single_train()
-        elif args.type == 'sequence' :
+        elif args.mode == 'sequence' :
             generate_sequential_data(type = 'val')
         else :
             print("Type variable is not valid")

@@ -12,4 +12,12 @@ with test set of Aff-wild2
 `test_images_for_demo` folder should be in `DATA_PATH`.  
 Please refer to the `README` among the extracted files for the details.
 
-3. 
+3.
+    (1) FER-Tuned test (current single image)  
+    Please set the `config.ini` before the test.  
+    ```python eval.py --location 231 --type val```  
+
+    (2) CAPNet test (past sequence image)  
+    Please set the `config.ini` before the test.  
+    ```python generate_dataset.py --location 231 --type sequence --mode val```  
+    ```python eval.py --location 231 --type val```  

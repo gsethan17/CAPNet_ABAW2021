@@ -685,7 +685,7 @@ if __name__ == "__main__" :
         write_submit(type=args.type)
 
     elif MODEL_KEY == 'CAPNet' :
-        write_sequence(type=args.type)
+        write_submit_sequence(type=args.type)
 
     else :
         print('Mode parser is not valid')

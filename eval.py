@@ -243,7 +243,6 @@ def write_sequence(type='val') :
             f.close()
 
 def get_postprocessing(name, img_name, pp, prior_valence, prior_arousal) :
-    print(prior_valence, prior_arousal)
     if name in pp['keep'] :
         if prior_valence == -10 :
             return -1
@@ -334,7 +333,6 @@ def write_submit(type='test') :
 
             image_path = os.path.join(base_dir, 'cropped', name, '{:0>5}'.format(i+1) + '.jpg')
             if not os.path.isfile(image_path) :
-                print(image_path)
                 if count == 0 :
                     valence, arousal = get_postprocessing(name, '{:0>5}'.format(i+1) + '.jpg', pp, valence, arousal)
 
@@ -360,7 +358,6 @@ def write_submit(type='test') :
                     count = 0
 
             else :
-                print(image_path)
                 x = load_image(image_path, INPUT_IMAGE_SIZE)
                 x = tf.expand_dims(x, axis = 0)
 

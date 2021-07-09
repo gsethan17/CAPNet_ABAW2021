@@ -499,7 +499,7 @@ def write_submit_sequence(type='test') :
                     count += 1
 
                 if len(xs) < BATCH_SIZE:
-                    if i == (int(total_len) - 1):
+                    if j == (int(total_len) - 1):
                         predicts = MODEL(xs)
 
                         for p in range(len(predicts)):

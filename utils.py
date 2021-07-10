@@ -1,3 +1,13 @@
+'''
+Source code for
+"Causal affect prediction model using a facial image sequence" and
+submissions of the Affective Behavior Analysis in-the-wild (ABAW) Competition.
+
+Please refer to following url for the details.
+https://arxiv.org/abs/2107.03886
+https://ibug.doc.ic.ac.uk/resources/iccv-2021-2nd-abaw/
+'''
+
 import os
 from glob import glob
 import csv

@@ -1,14 +1,14 @@
 # CAPNet & FER-Tuned
 CAPNet is a causal affect prediction network, which is the deep learning model to predict affect state with a sequence of past facial images.  
 FER-Tuned is a facial expression recognition model, which is deep learning model to recognize affect state with a single current facial image.  
-Please refer to the paper as following for the details.  
+Please refer to the paper as follows for the details.  
 [Causal affect prediction model using a facial image sequence](https://arxiv.org/abs/2107.03886)
 
 # The Affective Behavior Analysis in-the-wild 2021
 We participated in the 2nd Affective Behavior Analysis in-the-wild (ABAW2) Competition with the above two models.  
 [ABAW2](https://ibug.doc.ic.ac.uk/resources/iccv-2021-2nd-abaw/)  
 
-We provide a demo test to yield the results submitted to ABAW2 as following.
+We provide a demo test to yield the results submitted to ABAW2 as follows.
 
 ## Pre-trained weights Download
 Please download the pre-trained weights for CAPNet & FER-Tuned.  
